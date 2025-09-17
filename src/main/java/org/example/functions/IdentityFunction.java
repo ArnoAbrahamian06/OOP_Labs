@@ -1,10 +1,10 @@
 package org.example.functions;
 
-public class SqrFunction implements MathFunction {
+
+public class IdentityFunction implements MathFunction {
     @Override
     public double apply(double x) {
-        return Math.pow(x, 2);
+        return x;
     }
-
-
 }
+
