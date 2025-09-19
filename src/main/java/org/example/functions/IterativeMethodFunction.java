@@ -11,6 +11,7 @@ public class IterativeMethodFunction implements MathFunction {
         this.tolerance = tolerance;
     }
 
+    // Конструктор с дефолтными параметрами
     public IterativeMethodFunction(MathFunction phi) {
         this(phi, 1000, 1e-10);
     }

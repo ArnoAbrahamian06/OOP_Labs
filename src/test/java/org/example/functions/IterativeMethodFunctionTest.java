@@ -17,11 +17,11 @@ public class IterativeMethodFunctionTest {
 
     @Test
     public void testLinearConvergence() {
-        MathFunction linearPhi = x -> 0.5 * x + 1; // φ(x) = 0.5x + 1
+        MathFunction linearPhi = x -> 0.5 * x + 1;
         IterativeMethodFunction solver = new IterativeMethodFunction(linearPhi);
 
         double result = solver.apply(0.0);
-        double expected = 2.0; // Решение уравнения x = 0.5x + 1
+        double expected = 2.0;
         assertEquals(expected, result, DELTA);
     }
 }
