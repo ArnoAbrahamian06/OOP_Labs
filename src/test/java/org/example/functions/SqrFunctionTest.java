@@ -1,7 +1,9 @@
-import org.example.functions.MathFunction;
-import org.example.functions.SqrFunction;
+package org.example.functions;
+//import org.example.functions.MathFunction;
+//import org.example.functions.SqrFunction;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
 
 public class SqrFunctionTest {
 
