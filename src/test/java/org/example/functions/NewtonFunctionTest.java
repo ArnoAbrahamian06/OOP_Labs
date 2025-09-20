@@ -1,4 +1,5 @@
 package org.example.functions;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
