@@ -1,13 +1,13 @@
 package org.example.functions;
 
-public class Node {
-    int x;
-    int y;
-    Node next;
+class Node {
+    public Node next;
+    public Node prev;
+    public double x;
+    public double y;
 
-    public Node(int x, int y) {
+    public Node(double x, double y) {
         this.x = x;
         this.y = y;
-        this.next = null;
     }
 }
