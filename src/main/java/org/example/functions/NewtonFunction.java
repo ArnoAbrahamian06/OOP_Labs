@@ -29,7 +29,11 @@ public class NewtonFunction implements MathFunction {
                     return current; // Мы уже в корне
                 }
             }
-
+            if (fpx == 0){
+                System.out.println("Нельзя вычеслить корень методом Ньютона т.к. производная = 0");
+                System.out.println("попробуйте другое начальное значение");
+                return 0;
+            }
             double next = current - fx / fpx;
 
             if (Math.abs(next - current) < tolerance) {
