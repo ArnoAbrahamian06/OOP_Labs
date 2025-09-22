@@ -22,6 +22,85 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
         count++;
     }
 
+    protected Node floorNodeOfX(double x) {
+        if (count == 0) {
+            throw new IllegalStateException("Список пуст");
+        }
+
+        // Для случая с одним узлом
+        if (count == 1) {
+            return head;
+        }
+
+        // Экстраполяция слева
+        if (x < head.x) {
+            return head;
+        }
+
+        // Экстраполяция справа
+        if (x > head.prev.x) {
+            return head.prev.prev;
+        }
+
+        // Определяем, с какой стороны начинать поиск
+        double distanceFromStart = x - head.x;
+        double distanceFromEnd = head.prev.x - x;
+
+        if (distanceFromStart <= distanceFromEnd) {
+            // x ближе к началу - ищем от головы
+            Node current = head;
+            while (current.next != head && x >= current.next.x) {
+                current = current.next;
+            }
+            return current;
+        } else {
+            // x ближе к концу - ищем от хвоста
+            Node current = head.prev;
+            while (current != head && x < current.x) {
+                current = current.prev;
+            }
+            return current;
+        }
+    }
+
+    private Node findNodeByX(double x) {
+        if (count == 0) return null;
+
+        Node current = head;
+        do {
+            if (current.x == x) {
+                return current;
+            }
+            current = current.next;
+        } while (current != head);
+
+        return null;
+    }
+
+    @Override
+    public double apply(double x) {
+        if (count == 0) {
+            System.out.println("Функция не содержит точек");
+            return 0;
+        }
+
+        // Проверка точного совпадения
+        Node exactNode = findNodeByX(x);
+        if (exactNode != null) {
+            return exactNode.y;
+        }
+
+        // Определение режима (экстраполяция/интерполяция)
+        if (x < head.x) {
+            return extrapolateLeft(x);
+        } else if (x > head.prev.x) {
+            return extrapolateRight(x);
+        } else {
+            Node leftNode = floorNodeOfX(x);
+            return interpolate(x, leftNode.x, leftNode.next.x, leftNode.y, leftNode.next.y);
+        }
+    }
+
     // Конструктор из массивов x и y
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
         for (int i = 0; i < xValues.length; i++) {
