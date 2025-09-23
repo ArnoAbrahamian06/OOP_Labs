@@ -1,9 +1,45 @@
 package org.example.functions;
 
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
     private Node head;
     protected int count;
+
+    @Override
+    public void remove(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("индекс находится за пределами допустимого диапазона: " + index);
+        }
+
+        if (count == 0) {
+            throw new IllegalStateException("Удаление из пустого списка невозможно");
+        }
+
+        // Если удаляется единственный узел
+        if (count == 1) {
+            head = null;
+            count = 0;
+            return;
+        }
+
+        Node nodeToRemove = getNode(index);
+
+        // Если удаляется головной узел
+        if (nodeToRemove == head) {
+            head = head.next;
+        }
+
+        // Перестраиваем связи
+        nodeToRemove.prev.next = nodeToRemove.next;
+        nodeToRemove.next.prev = nodeToRemove.prev;
+
+        // Очищаем ссылки удаляемого узла
+        nodeToRemove.next = null;
+        nodeToRemove.prev = null;
+
+        count--;
+    }
+
 
     // Приватный метод для добавления узла в конец списка
     private void addNode(double x, double y) {
