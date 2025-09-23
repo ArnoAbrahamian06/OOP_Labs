@@ -2,35 +2,34 @@ package org.example.functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
-    private int count; // Количество x и y
-    private double[] xValues; // Массив точек x
-    private double[] yValues; // Массив точек y
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+    private int count;
+    private int capacity; // Добавленное поле для запаса памяти
+    private double[] xValues;
+    private double[] yValues;
 
-    ArrayTabulatedFunction (double[] xValues, double[] yValues) {  // Конструктор через массивы
+    public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
         this.count = xValues.length;
-        this.xValues = Arrays.copyOf(xValues, count);
-        this.yValues = Arrays.copyOf(yValues, count);
+        this.capacity = count + 5; // Начальный запас памяти
+        this.xValues = Arrays.copyOf(xValues, capacity);
+        this.yValues = Arrays.copyOf(yValues, capacity);
     }
 
-    ArrayTabulatedFunction (MathFunction source, double xFrom, double xTo, int count) {  // Конструктор через x0 и  x конечное с шагом
-        if (xFrom > xTo) { // Свап в случае
+    public ArrayTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
+        if (xFrom > xTo) {
             double temp = xFrom;
             xFrom = xTo;
             xTo = temp;
         }
 
         this.count = count;
-        this.xValues = new double[count];
-        this.yValues = new double[count];
+        this.capacity = count + 5; // Начальный запас памяти
+        this.xValues = new double[capacity];
+        this.yValues = new double[capacity];
 
-        double step = (xTo - xFrom) /  count; // Шаг
-        xValues[0] = xFrom;   // Первый x
-        yValues[0] = source.apply(xFrom);
-        xValues[count-1] = xTo;  // Первый y
-        yValues[count-1] = source.apply(xTo);
-        for (int i = 1; i < count; i++) {
-            xValues[i] = xValues[i-1] + step;
+        double step = (xTo - xFrom) / (count - 1);
+        for (int i = 0; i < count; i++) {
+            xValues[i] = xFrom + i * step;
             yValues[i] = source.apply(xValues[i]);
         }
     }
@@ -110,5 +109,38 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
         double leftY = yValues[floorIndex];
         double rightY = yValues[floorIndex + 1];
         return interpolate(x, leftX, rightX, leftY, rightY);
+    }
+
+    @Override
+    public void insert(double x, double y) {
+        int index = indexOfX(x);
+
+        // Если x уже существует, заменяем y
+        if (index != -1) {
+            yValues[index] = y;
+            return;
+        }
+
+        // Если массив заполнен, увеличиваем capacity
+        if (count == capacity) {
+            capacity += 5; // Увеличиваем запас памяти
+            xValues = Arrays.copyOf(xValues, capacity);
+            yValues = Arrays.copyOf(yValues, capacity);
+        }
+
+        // Находим позицию для вставки
+        int insertIndex = 0;
+        while (insertIndex < count && xValues[insertIndex] < x) {
+            insertIndex++;
+        }
+
+        // Сдвигаем элементы вправо
+        System.arraycopy(xValues, insertIndex, xValues, insertIndex + 1, count - insertIndex);
+        System.arraycopy(yValues, insertIndex, yValues, insertIndex + 1, count - insertIndex);
+
+        // Вставляем новые значения
+        xValues[insertIndex] = x;
+        yValues[insertIndex] = y;
+        count++;
     }
 }
