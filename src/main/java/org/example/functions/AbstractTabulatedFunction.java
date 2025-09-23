@@ -18,9 +18,9 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Ma
 
     // Общий метод интерполяции по значениям
     protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
-        if (Math.abs(rightX - leftX) < 1e-10) {
-            throw new IllegalArgumentException("Интервал интерполяции не может быть нулевым: leftX = " + leftX + ", rightX = " + rightX);
-        }
+//        if (Math.abs(rightX - leftX) < 1e-10) {
+//            throw new IllegalArgumentException("Интервал интерполяции не может быть нулевым: leftX = " + leftX + ", rightX = " + rightX);
+//        }
         return leftY + (rightY - leftY) * (x - leftX) / (rightX - leftX);
     }
 

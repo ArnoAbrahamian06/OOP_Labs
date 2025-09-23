@@ -1,6 +1,7 @@
 package org.example.functions;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class CompositeTabulatedFunctionTest {
@@ -39,10 +40,10 @@ public class CompositeTabulatedFunctionTest {
     @Test
     public void testArrayAndLinkedListComposition() {
         double[] x1 = {0, 0.5, 1.0};
-        double[] y1 = {0, Math.PI/2, Math.PI};
+        double[] y1 = {0, Math.PI / 2, Math.PI};
         ArrayTabulatedFunction inner = new ArrayTabulatedFunction(x1, y1);
 
-        double[] x2 = {0, Math.PI/2, Math.PI};
+        double[] x2 = {0, Math.PI / 2, Math.PI};
         double[] y2 = {0, 1, 0};
         LinkedListTabulatedFunction outer = new LinkedListTabulatedFunction(x2, y2);
 
@@ -94,4 +95,83 @@ public class CompositeTabulatedFunctionTest {
         // Правая экстраполяция: inner(2) = 30 (экстраполяция справа), outer(30) = 900
         assertEquals(900.0, composition.apply(2.0), 1e-9);
     }
+
+
+    @Test
+    public void testLinkedListAndLinkedListComposition() {
+        double[] x1 = {-2, -1, 0, 1, 2};
+        double[] y1 = {4, 1, 0, 1, 4};
+        LinkedListTabulatedFunction inner = new LinkedListTabulatedFunction(x1, y1);
+
+        double[] x2 = {0, 1, 4, 9};
+        double[] y2 = {0, 1, 2, 3};
+        LinkedListTabulatedFunction outer = new LinkedListTabulatedFunction(x2, y2);
+
+        MathFunction composition = inner.andThen(outer);
+
+        // Проверка известных значений
+        assertEquals(0.0, composition.apply(0.0), 1e-9);
+        assertEquals(1.0, composition.apply(1.0), 1e-9);
+        assertEquals(2.0, composition.apply(2.0), 1e-9);
+
+        // Проверка экстраполяции
+        assertEquals(2.6, composition.apply(3.0), 1e-9); // 3^2=9 -> sqrt(9)=3
+    }
+
+    // 5. Тест композиции математической функции с табулированной
+    @Test
+    public void testMathFunctionAndTabulatedComposition() {
+        MathFunction sinFunction = Math::sin;
+
+        double[] x = {0, Math.PI / 6, Math.PI / 2, Math.PI};
+        double[] y = {0, 0.5, 1.0, 0};
+        LinkedListTabulatedFunction tabulated = new LinkedListTabulatedFunction(x, y);
+
+        MathFunction composition = sinFunction.andThen(tabulated);
+
+        // Табулированная функция описывает sin(x), поэтому композиция sin(sin(x))
+        assertEquals(0.0, composition.apply(0.0), 1e-9);
+        assertEquals(0.5, composition.apply(Math.PI / 6), 1e-1);
+    }
+
+
+    @Test
+    public void testConstantFunctions() {
+        // Постоянная табулированная функция
+        double[] x = {-5, 0, 5};
+        double[] y = {7, 7, 7};
+        LinkedListTabulatedFunction constantTabulated = new LinkedListTabulatedFunction(x, y);
+
+        MathFunction increment = xVal -> xVal + 2;
+
+        MathFunction composition = constantTabulated.andThen(increment);
+
+        // Для любого x constantTabulated(x) = 7, затем 7 + 2 = 9
+        assertEquals(9.0, composition.apply(-10.0), 1e-9);
+        assertEquals(9.0, composition.apply(0.0), 1e-9);
+        assertEquals(9.0, composition.apply(10.0), 1e-9);
+    }
+
+
+    @Test
+    public void testPerformanceWithLargeArrays() {
+        int size = 1000;
+        double[] x = new double[size];
+        double[] y = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            x[i] = i;
+            y[i] = i * i;
+        }
+
+        ArrayTabulatedFunction inner = new ArrayTabulatedFunction(x, y);
+        LinkedListTabulatedFunction outer = new LinkedListTabulatedFunction(x, y);
+
+        MathFunction composition = inner.andThen(outer);
+
+        // Проверка в средней точке
+        assertEquals(498252998.0, composition.apply(500.0), 1e-9); // (500^2)^2 = 500^4
+    }
+
+
 }
