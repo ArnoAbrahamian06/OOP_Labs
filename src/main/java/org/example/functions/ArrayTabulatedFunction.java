@@ -2,7 +2,7 @@ package org.example.functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     private int count;
     private int capacity; // Добавленное поле для запаса памяти
     private double[] xValues;
@@ -142,5 +142,23 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         xValues[insertIndex] = x;
         yValues[insertIndex] = y;
         count++;
+    }
+
+    // Реализация интерфейса Remove
+    @Override
+    public void remove(int index) {
+// Сдвигаем элементы влево, начиная с позиции после удаляемого элемента
+        if (index < count - 1) {
+            System.arraycopy(xValues, index + 1, xValues, index, count - index - 1);
+            System.arraycopy(yValues, index + 1, yValues, index, count - index - 1);
+        }
+
+        // Очищаем последние элементы
+        if (count > 0) {
+            xValues[count - 1] = 0;
+            yValues[count - 1] = 0;
+        }
+
+        count--;
     }
 }
