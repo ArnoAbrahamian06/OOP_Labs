@@ -1,7 +1,7 @@
 package org.example.functions;
 
-
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
+
     private Node head;
     protected int count;
 
@@ -39,7 +39,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
         count--;
     }
-
 
     // Приватный метод для добавления узла в конец списка
     private void addNode(double x, double y) {
@@ -100,7 +99,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     private Node findNodeByX(double x) {
-        if (count == 0) return null;
+        if (count == 0)
+            return null;
 
         Node current = head;
         do {
