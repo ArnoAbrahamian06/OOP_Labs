@@ -35,7 +35,7 @@ public class LinkedListTabulatedFunctionTest {
         double[] yValues = {10.0, 20.0, 30.0};
         LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
 
-        Node node = function.getNode(1); // Доступ через рефлексию или изменение модификатора на protected
+        LinkedListTabulatedFunction.Node node = function.getNode(1); // Доступ через рефлексию или изменение модификатора на protected
         assertEquals(2.0, node.x, DELTA);
         assertEquals(20.0, node.y, DELTA);
     }
@@ -60,15 +60,15 @@ public class LinkedListTabulatedFunctionTest {
         LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(xValues, yValues);
 
         // x ближе к началу
-        Node node1 = func.floorNodeOfX(0.5);
+        LinkedListTabulatedFunction.Node node1 = func.floorNodeOfX(0.5);
         assertEquals(0.0, node1.x, 1e-9);
 
         // x ближе к концу
-        Node node2 = func.floorNodeOfX(3.5);
+        LinkedListTabulatedFunction.Node node2 = func.floorNodeOfX(3.5);
         assertEquals(3.0, node2.x, 1e-9);
 
         // x посередине
-        Node node3 = func.floorNodeOfX(2.2);
+        LinkedListTabulatedFunction.Node node3 = func.floorNodeOfX(2.2);
         assertEquals(2.0, node3.x, 1e-9);
     }
 

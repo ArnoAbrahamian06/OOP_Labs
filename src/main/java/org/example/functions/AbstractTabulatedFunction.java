@@ -1,6 +1,6 @@
 package org.example.functions;
 
-public abstract class AbstractTabulatedFunction implements TabulatedFunction, MathFunction {
+public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     public abstract int getCount();
     public abstract double getX(int index);
