@@ -2,7 +2,7 @@ package org.example.functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     private int count;
     private int capacity; // Добавленное поле для запаса памяти
     private double[] xValues;
@@ -38,18 +38,22 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public int getCount() {
         return count;
     }
+
     @Override
     public double getX(int index) {
         return xValues[index];
     }
+
     @Override
     public double getY(int index) {
         return yValues[index];
     }
+
     @Override
     public void setY(int index, double y) {
         yValues[index] = y;
     }
+
     @Override
     public int indexOfX(double x) {
         for (int i = 0; i < count; i++) {
@@ -59,6 +63,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
         return -1;
     }
+
     @Override
     public int indexOfY(double y) {
         for (int i = 0; i < count; i++) {
@@ -68,17 +73,19 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
         return -1;
     }
+
     @Override
     public double leftBound() {
         return xValues[0];
     }
+
     @Override
     public double rightBound() {
         return xValues[count - 1];
     }
 
     @Override
-    protected int floorIndexOfX(double x){
+    protected int floorIndexOfX(double x) {
         if (x < xValues[0]) {
             return 0;
         }
@@ -89,6 +96,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
         return count;
     }
+
     @Override
     protected double extrapolateLeft(double x) {
         return count == 1 ? yValues[0] : interpolate(x, 0);
@@ -142,5 +150,23 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         xValues[insertIndex] = x;
         yValues[insertIndex] = y;
         count++;
+    }
+
+    // Реализация интерфейса Remove
+    @Override
+    public void remove(int index) {
+// Сдвигаем элементы влево, начиная с позиции после удаляемого элемента
+        if (index < count - 1) {
+            System.arraycopy(xValues, index + 1, xValues, index, count - index - 1);
+            System.arraycopy(yValues, index + 1, yValues, index, count - index - 1);
+        }
+
+        // Очищаем последние элементы
+        if (count > 0) {
+            xValues[count - 1] = 0;
+            yValues[count - 1] = 0;
+        }
+
+        count--;
     }
 }

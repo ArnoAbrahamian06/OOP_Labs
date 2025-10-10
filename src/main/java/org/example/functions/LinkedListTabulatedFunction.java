@@ -1,7 +1,7 @@
 package org.example.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
 
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
     private Node head;
     protected int count;
 
@@ -39,6 +39,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
         count--;
     }
+
 
     // Приватный метод для добавления узла в конец списка
     private void addNode(double x, double y) {
@@ -99,8 +100,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     private Node findNodeByX(double x) {
-        if (count == 0)
-            return null;
+        if (count == 0) return null;
 
         Node current = head;
         do {
@@ -285,5 +285,47 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         Node left = getNode(floorIndex);
         Node right = left.next;
         return interpolate(x, left.x, right.x, left.y, right.y);
+    }
+
+    // Реализация интерфейса insertable
+    @Override
+    public void insert(double x, double y) {
+        // Если список пуст, просто добавляем узел
+        if (count == 0) {
+            addNode(x, y);
+            return;
+        }
+
+        // Проверяем, существует ли узел с заданным x
+        Node existingNode = findNodeByX(x);
+        if (existingNode != null) {
+            existingNode.y = y; // Заменяем y и выходим
+            return;
+        }
+
+        // Если x меньше головного узла, вставляем в начало
+        if (x < head.x) {
+            Node newNode = new Node(x, y);
+            newNode.next = head;
+            newNode.prev = head.prev;
+            head.prev.next = newNode;
+            head.prev = newNode;
+            head = newNode; // Обновляем голову
+            count++;
+        }
+        // Если x больше последнего узла, добавляем в конец
+        else if (x > head.prev.x) {
+            addNode(x, y);
+        }
+        // Вставляем в середину списка
+        else {
+            Node floorNode = floorNodeOfX(x);
+            Node newNode = new Node(x, y);
+            newNode.next = floorNode.next;
+            newNode.prev = floorNode;
+            floorNode.next.prev = newNode;
+            floorNode.next = newNode;
+            count++;
+        }
     }
 }
