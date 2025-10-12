@@ -2,6 +2,7 @@ package org.example.functions;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.example.exceptions.*;
 
 public class ArrayTabulatedFunctionTest {
     @Test
@@ -67,11 +68,13 @@ public class ArrayTabulatedFunctionTest {
         new ArrayTabulatedFunction(xValues, yValues);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructorWithDifferentArrayLengths() {
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0}; // Разная длина
-        new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(DifferentLengthOfArraysException.class, () -> {
+            new ArrayTabulatedFunction(xValues, yValues);});
     }
 
     @Test(expected = IllegalArgumentException.class)
