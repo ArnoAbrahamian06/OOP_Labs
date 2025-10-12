@@ -53,14 +53,15 @@ public class MathFunctionCompositionTest {
     @Test
     public void testChainedComposition() {
         MathFunction f = new DoubleFunction();      // f(x) = 2x
-        MathFunction g = new IncrementFunction();   // g(x) = x + 3
+        MathFunction g = new IncrementFunction();   // g(x) = x + 1
         MathFunction h = new SquareFunction();      // h(x) = x²
 
         // Композиция: f(g(h(x))) = (x² + 3) * 2
         MathFunction composed = f.andThen(g).andThen(h);
 
-        assertEquals(8.0, composed.apply(1.0), 1e-10);  // ((1²)+3)*2 = 8
-        assertEquals(14.0, composed.apply(2.0), 1e-10); // ((2²)+3)*2 = 14
+        assertEquals(9.0, composed.apply(1.0), 1e-10);
+        assertEquals(25.0, composed.apply(2.0), 1e-10);
+
     }
 
     @Test

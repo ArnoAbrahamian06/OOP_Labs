@@ -53,11 +53,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
 
-
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Индекс " + index + " выходит за границы");
+            throw new IndexOutOfBoundsException("Индекс " + index + " выходит за границы");
         }
 
         if (count < 2) {
@@ -100,6 +99,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         count++;
     }
 
+
     protected Node floorNodeOfX(double x) {
         if (count == 0) {
             throw new IllegalStateException("Список пуст");
@@ -118,21 +118,22 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         // Определяем, с какой стороны начинать поиск
         double distanceFromStart = x - head.x;
         double distanceFromEnd = head.prev.x - x;
-        Node current = head.prev;
+        Node current;
 
         if (distanceFromStart <= distanceFromEnd) {
             // x ближе к началу - ищем от головы
+            current = head; // начинаем с головы
             while (current.next != head && x >= current.next.x) {
                 current = current.next;
             }
-            return current;
         } else {
             // x ближе к концу - ищем от хвоста
+            current = head.prev; // начинаем с хвоста
             while (current != head && x < current.x) {
                 current = current.prev;
             }
-            return current;
         }
+        return current;
     }
 
     private Node findNodeByX(double x) {
@@ -172,6 +173,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             return interpolate(x, leftNode.x, leftNode.next.x, leftNode.y, leftNode.next.y);
         }
     }
+
 
     // метод для получения узла по индексу
     protected Node getNode(int index) {

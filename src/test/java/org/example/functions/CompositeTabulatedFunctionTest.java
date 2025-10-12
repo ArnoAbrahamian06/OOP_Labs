@@ -127,7 +127,7 @@ public class CompositeTabulatedFunctionTest {
         double[] y = {0, 0.5, 1.0, 0};
         LinkedListTabulatedFunction tabulated = new LinkedListTabulatedFunction(x, y);
 
-        MathFunction composition = sinFunction.andThen(tabulated);
+        MathFunction composition = tabulated.andThen(sinFunction);
 
         // Табулированная функция описывает sin(x), поэтому композиция sin(sin(x))
         assertEquals(0.0, composition.apply(0.0), 1e-9);
