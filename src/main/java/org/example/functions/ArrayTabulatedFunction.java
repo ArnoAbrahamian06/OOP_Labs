@@ -119,12 +119,22 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     protected double extrapolateLeft(double x) {
-        return interpolate(x, 0);
+        return extrapolate(x, 0);
     }
 
     @Override
     protected double extrapolateRight(double x) {
-        return interpolate(x, count - 2);
+        return extrapolate(x, count - 2);
+    }
+
+    protected double extrapolate(double x, int floorIndex) {
+
+        double leftX = xValues[floorIndex];
+        double rightX = xValues[floorIndex + 1];
+        double leftY = yValues[floorIndex];
+        double rightY = yValues[floorIndex + 1];
+
+        return interpolate(x, leftX, rightX, leftY, rightY);
     }
 
     @Override
@@ -136,7 +146,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         double rightY = yValues[floorIndex + 1];
 
         if (x < leftX || x > rightX) {
-            throw new InterpolationException("x = " + x + " is out of interpolation range [" + leftX + ", " + rightX + "]");
+            throw new InterpolationException("x = " + x + " вне диапазона интерполяции [" + leftX + ", " + rightX + "]");
         }
 
         return interpolate(x, leftX, rightX, leftY, rightY);

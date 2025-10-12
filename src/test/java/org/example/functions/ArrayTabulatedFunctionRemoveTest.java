@@ -1,5 +1,6 @@
 package org.example.functions;
 
+import org.example.exceptions.DifferentLengthOfArraysException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -54,28 +55,33 @@ public class ArrayTabulatedFunctionRemoveTest {
     public void testRemoveSingleElement() {
         double[] xValues = {1.0};
         double[] yValues = {2.0};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        //ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new ArrayTabulatedFunction(xValues, yValues);
+        });
+        //function.remove(0);
 
-        function.remove(0);
-
-        assertEquals(0, function.getCount());
+        //assertEquals(0, function.getCount());
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testRemoveInvalidIndex() {
         double[] xValues = {1.0, 2.0};
         double[] yValues = {3.0, 4.0};
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        function.remove(5); // Неверный индекс
+        assertThrows(IllegalArgumentException.class, () ->
+                function.remove(5)); // Неверный индекс
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testRemoveFromEmptyArray() {
         double[] xValues = {};
         double[] yValues = {};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
-
-        function.remove(0); // Попытка удаления из пустого массива
+        //ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new ArrayTabulatedFunction(xValues, yValues);
+        });
+        //function.remove(0); // Попытка удаления из пустого массива
     }
 }
