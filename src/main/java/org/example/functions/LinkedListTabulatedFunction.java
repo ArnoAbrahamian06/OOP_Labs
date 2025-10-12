@@ -2,7 +2,7 @@ package org.example.functions;
 
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
-    static class Node {
+    protected static class Node {
         public Node next;
         public Node prev;
         public double x;
@@ -17,21 +17,51 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     private Node head;
     protected int count;
 
+    // Конструктор через дискретизацию функции
+    public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
+        if (count < 2) {
+            throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
+        }
+        if (xFrom > xTo) {
+            double temp = xFrom;
+            xFrom = xTo;
+            xTo = temp;
+        }
+
+        if (xFrom == xTo) {
+            double y = source.apply(xFrom);
+            for (int i = 0; i < count; i++) {
+                addNode(xFrom, y);
+            }
+        } else {
+            double step = (xTo - xFrom) / (count - 1);
+            for (int i = 0; i < count; i++) {
+                double x = xFrom + i * step;
+                addNode(x, source.apply(x));
+            }
+        }
+    }
+
+    // Конструктор из массивов x и y
+    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
+        if (xValues.length < 2) {
+            throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
+        }
+        for (int i = 0; i < xValues.length; i++) {
+            addNode(xValues[i], yValues[i]);
+        }
+    }
+
+
+
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException("индекс находится за пределами допустимого диапазона: " + index);
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы");
         }
 
-        if (count == 0) {
-            throw new IllegalStateException("Удаление из пустого списка невозможно");
-        }
-
-        // Если удаляется единственный узел
-        if (count == 1) {
-            head = null;
-            count = 0;
-            return;
+        if (count < 2) {
+            throw new IllegalStateException("Нельзя удалить элемент из таблицы с менее чем 2 точками");
         }
 
         Node nodeToRemove = getNode(index);
@@ -75,14 +105,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             throw new IllegalStateException("Список пуст");
         }
 
-        // Для случая с одним узлом
-        if (count == 1) {
-            return head;
-        }
-
         // Экстраполяция слева
         if (x < head.x) {
-            return head;
+            throw new IllegalArgumentException("x = " + x + " меньше левой границы " + head.x);
         }
 
         // Экстраполяция справа
@@ -93,17 +118,16 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         // Определяем, с какой стороны начинать поиск
         double distanceFromStart = x - head.x;
         double distanceFromEnd = head.prev.x - x;
+        Node current = head.prev;
 
         if (distanceFromStart <= distanceFromEnd) {
             // x ближе к началу - ищем от головы
-            Node current = head;
             while (current.next != head && x >= current.next.x) {
                 current = current.next;
             }
             return current;
         } else {
             // x ближе к концу - ищем от хвоста
-            Node current = head.prev;
             while (current != head && x < current.x) {
                 current = current.prev;
             }
@@ -149,43 +173,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
     }
 
-    // Конструктор из массивов x и y
-    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
-        for (int i = 0; i < xValues.length; i++) {
-            addNode(xValues[i], yValues[i]);
-        }
-    }
-
-    // Конструктор через дискретизацию функции
-    public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
-        if (xFrom > xTo) {
-            double temp = xFrom;
-            xFrom = xTo;
-            xTo = temp;
-        }
-
-        if (count < 2) {
-            throw new IllegalArgumentException("Count must be greater than 1");
-        }
-
-        if (xFrom == xTo) {
-            double y = source.apply(xFrom);
-            for (int i = 0; i < count; i++) {
-                addNode(xFrom, y);
-            }
-        } else {
-            double step = (xTo - xFrom) / (count - 1);
-            for (int i = 0; i < count; i++) {
-                double x = xFrom + i * step;
-                addNode(x, source.apply(x));
-            }
-        }
-    }
-
     // метод для получения узла по индексу
     protected Node getNode(int index) {
         if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException("Index is out of bounds");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы");
         }
 
         Node current;
@@ -261,7 +252,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     protected int floorIndexOfX(double x) {
         if (x < head.x) {
-            return 0;
+            throw new IllegalArgumentException("x = " + x + " меньше левой границы ");
         }
         if (x > head.prev.x) {
             return count;

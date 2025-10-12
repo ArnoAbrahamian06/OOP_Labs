@@ -92,14 +92,6 @@ public class LinkedListTabulatedFunctionTest {
         assertEquals(7.0, listFunc.apply(3.0), 1e-9);
     }
 
-    @Test
-    public void testApplyWithSingleNode() {
-        double[] xValues = {5.0};
-        double[] yValues = {10.0};
-        LinkedListTabulatedFunction func1 = new LinkedListTabulatedFunction(xValues, yValues);
-
-        assertEquals(10.0, func1.apply(5.0), 1e-9);
-    }
 
     @Test
     public void testApplyComparisonWithArray() {
@@ -113,6 +105,91 @@ public class LinkedListTabulatedFunctionTest {
         for (double x = -0.5; x <= 3.5; x += 0.1) {
             assertEquals(arrayFunc.apply(x), listFunc.apply(x), 1e-9);
         }
+    }
+
+    // Тесты на исключения
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithSinglePoint() {
+        double[] xValues = {1.0};
+        double[] yValues = {10.0};
+        new LinkedListTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithEmptyArray() {
+        double[] xValues = {};
+        double[] yValues = {};
+        new LinkedListTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithDifferentArrayLengths() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0}; // Разная длина
+        new LinkedListTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorFromFunctionWithCountLessThanTwo() {
+        MathFunction source = new SqrFunction();
+        new LinkedListTabulatedFunction(source, 0, 2, 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetXWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.getX(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetXWithIndexOutOfBounds() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.getX(5);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetYWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.getY(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetYWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.setY(-1, 15.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFloorIndexOfXWithXLessThanLeftBound() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.floorIndexOfX(0.5);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFloorNodeOfXWithXLessThanLeftBound() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.floorNodeOfX(0.5);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveWithLessThanTwoPoints() {
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+        function.remove(0);
+        function.remove(0); // Теперь осталась только одна точка
     }
 }
 

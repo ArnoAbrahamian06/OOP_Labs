@@ -51,4 +51,81 @@ public class ArrayTabulatedFunctionTest {
         assertEquals(6, function.getCount()); // Количество не изменилось
         assertEquals(25.0, function.getY(3), 1e-10); // Значение заменено
     }
+
+    // Тесты на исключения
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithSinglePoint() {
+        double[] xValues = {1.0};
+        double[] yValues = {10.0};
+        new ArrayTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithEmptyArray() {
+        double[] xValues = {};
+        double[] yValues = {};
+        new ArrayTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithDifferentArrayLengths() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0}; // Разная длина
+        new ArrayTabulatedFunction(xValues, yValues);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorFromFunctionWithCountLessThanTwo() {
+        MathFunction source = new SqrFunction();
+        new ArrayTabulatedFunction(source, 0, 2, 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetXWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.getX(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetXWithIndexOutOfBounds() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.getX(5);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetYWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.getY(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetYWithNegativeIndex() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.setY(-1, 15.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFloorIndexOfXWithXLessThanLeftBound() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.floorIndexOfX(0.5);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveWithLessThanTwoPoints() {
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        function.remove(0);
+        function.remove(0); // Теперь осталась только одна точка
+    }
 }
