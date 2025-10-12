@@ -56,11 +56,11 @@ public class MathFunctionCompositionTest {
         MathFunction g = new IncrementFunction();   // g(x) = x + 3
         MathFunction h = new SquareFunction();      // h(x) = x²
 
-        // Композиция: f(g(h(x))) = (x² + 3) * 2
-        MathFunction composed = f.andThen(g).andThen(h);
+        // Композиция: f(g(h(x))) = (x² + 1) * 2
+        MathFunction composed = h.andThen(g).andThen(f);
 
-        assertEquals(8.0, composed.apply(1.0), 1e-10);  // ((1²)+3)*2 = 8
-        assertEquals(14.0, composed.apply(2.0), 1e-10); // ((2²)+3)*2 = 14
+        assertEquals(4.0, composed.apply(1.0), 1e-10);  // ((1²)+1)*2 = 4
+        assertEquals(10.0, composed.apply(2.0), 1e-10); // ((2²)+1)*2 = 10
     }
 
     @Test

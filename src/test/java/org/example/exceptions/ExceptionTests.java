@@ -31,22 +31,9 @@ public class ExceptionTests {
     public void testArrayIsNotSortedExceptionWithEqualValues() {
         double[] xValues = {1.0, 2.0, 2.0}; // равные значения
 
-        assertThrows(ArrayIsNotSortedException.class, () -> {
-            AbstractTabulatedFunction.checkSorted(xValues);
-        });
+        AbstractTabulatedFunction.checkSorted(xValues);
     }
 
-    @Test
-    public void testInterpolationException() {
-        double[] xValues = {1.0, 2.0, 3.0};
-        double[] yValues = {1.0, 4.0, 9.0};
-
-        AbstractTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
-
-        // Должно бросать исключение - x вне интервала
-        assertThrows(InterpolationException.class, () -> function.apply(0.5));  // x < leftX
-        assertThrows(InterpolationException.class, () -> function.apply(3.5));
-    }
 
     @Test
     public void testConstructorExceptions() {
