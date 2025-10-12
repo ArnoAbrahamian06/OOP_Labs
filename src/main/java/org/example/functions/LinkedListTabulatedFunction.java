@@ -1,5 +1,6 @@
 package org.example.functions;
 
+import org.example.exceptions.*;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
     protected static class Node {
@@ -47,6 +48,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         if (xValues.length < 2) {
             throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
         }
+
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues); // Проверка на одинаковую длину X и Y
+        AbstractTabulatedFunction.checkSorted(xValues);// Проверка на отсортированность X
+
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
         }
@@ -289,6 +294,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     protected double interpolate(double x, int floorIndex) {
         Node left = getNode(floorIndex);
         Node right = left.next;
+
+        if (x < left.x || x > right.x) {
+            throw new InterpolationException("x = " + x + " is out of interpolation range [" + left.x + ", " + right.x + "]");
+        }
+
         return interpolate(x, left.x, right.x, left.y, right.y);
     }
 

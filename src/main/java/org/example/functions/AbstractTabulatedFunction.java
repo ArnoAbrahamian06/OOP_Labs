@@ -1,5 +1,8 @@
 package org.example.functions;
 
+import org.example.exceptions.ArrayIsNotSortedException;
+import org.example.exceptions.DifferentLengthOfArraysException;
+
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     public abstract int getCount();
@@ -22,6 +25,19 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
             throw new IllegalArgumentException("Интервал интерполяции не может быть нулевым: leftX = " + leftX + ", rightX = " + rightX);
         }
         return leftY + (rightY - leftY) * (x - leftX) / (rightX - leftX);
+    }
+
+    public static void checkLengthIsTheSame(double[] xValues, double[] yValues){
+        if(xValues.length != yValues.length){
+            throw new DifferentLengthOfArraysException("Длинна X и Y различна");
+        }
+    }
+    public static void checkSorted(double[] xValues){
+        for(int i = 0; i < xValues.length; i++){
+            if(xValues[i] > xValues[i+1]){
+                throw new ArrayIsNotSortedException("Массив X не отсортирован");
+            }
+        }
     }
 
     // Реализация метода apply из MathFunction

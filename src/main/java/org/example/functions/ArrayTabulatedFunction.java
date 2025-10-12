@@ -1,6 +1,7 @@
 package org.example.functions;
 
 import java.util.Arrays;
+import org.example.exceptions.*;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     private int count;
@@ -12,9 +13,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (xValues.length < 2) {
             throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
         }
-        if (xValues.length != yValues.length) {
-            throw new IllegalArgumentException("Длины массивов x и y должны совпадать");
-        }
+
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues); // Проверка на одинаковую длину X и Y
+        AbstractTabulatedFunction.checkSorted(xValues);// Проверка на отсортированность X
+
         this.count = xValues.length;
         this.capacity = count + 5; // Начальный запас памяти
         this.xValues = Arrays.copyOf(xValues, capacity);
@@ -127,12 +129,19 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     protected double interpolate(double x, int floorIndex) {
+
         double leftX = xValues[floorIndex];
         double rightX = xValues[floorIndex + 1];
         double leftY = yValues[floorIndex];
         double rightY = yValues[floorIndex + 1];
+
+        if (x < leftX || x > rightX) {
+            throw new InterpolationException("x = " + x + " is out of interpolation range [" + leftX + ", " + rightX + "]");
+        }
+
         return interpolate(x, leftX, rightX, leftY, rightY);
     }
+
 
     @Override
     public void insert(double x, double y) {
