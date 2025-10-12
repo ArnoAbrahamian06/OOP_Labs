@@ -123,21 +123,14 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         // Определяем, с какой стороны начинать поиск
         double distanceFromStart = x - head.x;
         double distanceFromEnd = head.prev.x - x;
-        Node current;
 
-        if (distanceFromStart <= distanceFromEnd) {
-            // x ближе к началу - ищем от головы
-            current = head; // начинаем с головы
-            while (current.next != head && x >= current.next.x) {
-                current = current.next;
+        Node current = head;
+        do {
+            if (current.x == x) {
+                return current;
             }
-        } else {
-            // x ближе к концу - ищем от хвоста
-            current = head.prev; // начинаем с хвоста
-            while (current != head && x < current.x) {
-                current = current.prev;
-            }
-        }
+            current = current.next;
+        } while (current != head);
         return current;
     }
 
@@ -296,11 +289,23 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         Node right = left.next;
 
         if (x < left.x || x > right.x) {
-            throw new InterpolationException("x = " + x + " is out of interpolation range [" + left.x + ", " + right.x + "]");
+            throw new InterpolationException("x = " + x + " вне диапазона интерполяции [" + left.x + ", " + right.x + "]");
         }
 
         return interpolate(x, left.x, right.x, left.y, right.y);
     }
+
+//    protected double extrapolate (double x, int floorIndex) {
+//        Node left = getNode(floorIndex);
+//        Node right = left.next;
+//
+//        if (x >= left.x || x <= right.x) {
+//            throw new InterpolationException("x = " + x + " вне диапазона экстраполяции [" + left.x + ", " + right.x + "]");
+//        }
+//
+//        return interpolate(x, left.x, right.x, left.y, right.y);
+//    }
+
 
     // Реализация интерфейса insertable
     @Override
