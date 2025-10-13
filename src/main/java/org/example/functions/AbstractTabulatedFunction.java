@@ -40,6 +40,24 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append(" size = ");
+        sb.append(getCount());
+
+        for (Point point : this) {
+            sb.append("\n[");
+            sb.append(point.x);
+            sb.append("; ");
+            sb.append(point.y);
+            sb.append("]");
+        }
+
+        return sb.toString();
+    }
+
     // Реализация метода apply из MathFunction
     @Override
     public double apply(double x) {
