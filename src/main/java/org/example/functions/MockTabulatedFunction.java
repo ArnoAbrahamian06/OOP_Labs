@@ -1,4 +1,6 @@
 package org.example.functions;
+import java.util.Iterator;
+
 
 public class MockTabulatedFunction extends AbstractTabulatedFunction {
     private final double x0;
@@ -78,5 +80,9 @@ public class MockTabulatedFunction extends AbstractTabulatedFunction {
     @Override
     public double rightBound() {
         return x1;
+    }
+    @Override
+    public Iterator<Point> iterator() {
+        throw new UnsupportedOperationException();
     }
 }

@@ -269,8 +269,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double extrapolateRight(double x) {
-        Node last = head.prev;
-        Node prevLast = last.prev;
         return extrapolate(x, count - 2);
     }
 
@@ -332,5 +330,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             floorNode.next = newNode;
             count++;
         }
+    }
+
+    @Override
+    public java.util.Iterator<Point> iterator() {
+        throw new UnsupportedOperationException();
     }
 }

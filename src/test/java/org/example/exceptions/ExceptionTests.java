@@ -1,6 +1,5 @@
 package org.example.exceptions;
 
-import org.example.exceptions.*;
 import org.example.functions.*;
 
 import org.junit.Test;

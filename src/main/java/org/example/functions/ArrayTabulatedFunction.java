@@ -1,6 +1,7 @@
 package org.example.functions;
 
 import java.util.Arrays;
+
 import org.example.exceptions.*;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
@@ -53,7 +54,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public double getX(int index) {
         if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count-1) + "]");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count - 1) + "]");
         }
         return xValues[index];
     }
@@ -61,7 +62,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public double getY(int index) {
         if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count-1) + "]");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count - 1) + "]");
         }
         return yValues[index];
     }
@@ -69,7 +70,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void setY(int index, double y) {
         if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count-1) + "]");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count - 1) + "]");
         }
         yValues[index] = y;
     }
@@ -190,12 +191,12 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count-1) + "]");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count - 1) + "]");
         }
         if (count < 2) {
             throw new IllegalStateException("Нельзя удалить элемент из таблицы с менее чем 2 точками");
         }
-        
+
         // Сдвигаем элементы влево, начиная с позиции после удаляемого элемента
         if (index < count - 1) {
             System.arraycopy(xValues, index + 1, xValues, index, count - index - 1);
@@ -209,5 +210,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
 
         count--;
+    }
+
+    @Override
+    public java.util.Iterator<Point> iterator() {
+        throw new UnsupportedOperationException();
     }
 }
