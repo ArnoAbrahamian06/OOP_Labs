@@ -24,6 +24,15 @@ public class ArrayTabulatedFunctionTest {
     }
 
     @Test
+    public void testInterpolateExceptions() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction func = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class,() ->  {func.interpolate(3.5, 1);});
+    }
+
+    @Test
     public void testInsert() {
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0, 30.0};

@@ -17,6 +17,10 @@ public class LinkedListTabulatedFunctionTest {
         assertEquals(1.0, function.leftBound(), DELTA);
         assertEquals(3.0, function.rightBound(), DELTA);
         assertEquals(20.0, function.getY(1), DELTA);
+        assertEquals(1, function.indexOfX(2.0), DELTA);
+        assertEquals(0 , function.indexOfY(10.0), DELTA);
+        assertEquals(25.0, function.interpolate(2.5, 1), DELTA);
+
     }
 
     @Test
