@@ -214,6 +214,23 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public java.util.Iterator<Point> iterator() {
-        throw new UnsupportedOperationException();
+        return new java.util.Iterator<Point>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < count;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException("Больше нет элементов");
+                }
+                Point point = new Point(xValues[index], yValues[index]);
+                index++;
+                return point;
+            }
+        };
     }
 }
