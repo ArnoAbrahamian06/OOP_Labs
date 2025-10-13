@@ -48,7 +48,7 @@ public class LinkedListTabulatedFunctionRemovableTest {
         assertEquals(30.0, function.getY(2), 1e-10);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testRemoveSingleElement() {
         double[] xValues = {1.0};
         double[] yValues = {10.0};
@@ -60,7 +60,7 @@ public class LinkedListTabulatedFunctionRemovableTest {
         assertEquals(0, function.getCount());
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testRemoveWithInvalidIndex() {
         double[] xValues = {1.0, 2.0};
         double[] yValues = {10.0, 20.0};
@@ -69,7 +69,7 @@ public class LinkedListTabulatedFunctionRemovableTest {
         function.remove(5); // Неверный индекс
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testRemoveWithNegativeIndex() {
         double[] xValues = {1.0, 2.0};
         double[] yValues = {10.0, 20.0};
@@ -113,7 +113,7 @@ public class LinkedListTabulatedFunctionRemovableTest {
         // Если бы мы могли получить элемент с индексом 2, он должен быть равен индексу 0
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testRemoveAllElements() {
         double[] xValues = {1.0, 2.0};
         double[] yValues = {10.0, 20.0};

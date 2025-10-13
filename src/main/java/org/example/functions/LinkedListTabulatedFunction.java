@@ -58,10 +58,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
 
+
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException("Индекс " + index + " выходит за границы");
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы");
         }
 
         if (count < 2) {
@@ -104,33 +105,24 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         count++;
     }
 
-
     protected Node floorNodeOfX(double x) {
         if (count == 0) {
             throw new IllegalStateException("Список пуст");
         }
 
-        // Экстраполяция слева
         if (x < head.x) {
             throw new IllegalArgumentException("x = " + x + " меньше левой границы " + head.x);
         }
 
-        // Экстраполяция справа
-        if (x > head.prev.x) {
-            return head.prev.prev;
+        if (x >= head.prev.x) {
+            return head.prev; // Для интерполяции в правой части
         }
 
-        // Определяем, с какой стороны начинать поиск
-        double distanceFromStart = x - head.x;
-        double distanceFromEnd = head.prev.x - x;
-
+        // Начинаем поиск с головы и идем до тех пор, пока не найдем правильный интервал
         Node current = head;
-        do {
-            if (current.x == x) {
-                return current;
-            }
+        while (current.next != head && x >= current.next.x) {
             current = current.next;
-        } while (current != head);
+        }
         return current;
     }
 
@@ -171,7 +163,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             return interpolate(x, leftNode.x, leftNode.next.x, leftNode.y, leftNode.next.y);
         }
     }
-
 
     // метод для получения узла по индексу
     protected Node getNode(int index) {
@@ -273,14 +264,14 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double extrapolateLeft(double x) {
-        return interpolate(x, head.x, head.next.x, head.y, head.next.y);
+        return extrapolate(x, 0);
     }
 
     @Override
     protected double extrapolateRight(double x) {
         Node last = head.prev;
         Node prevLast = last.prev;
-        return interpolate(x, prevLast.x, last.x, prevLast.y, last.y);
+        return extrapolate(x, count - 2);
     }
 
     @Override
@@ -289,23 +280,17 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         Node right = left.next;
 
         if (x < left.x || x > right.x) {
-            throw new InterpolationException("x = " + x + " вне диапазона интерполяции [" + left.x + ", " + right.x + "]");
+            throw new InterpolationException("x = " + x + " is out of interpolation range [" + left.x + ", " + right.x + "]");
         }
 
         return interpolate(x, left.x, right.x, left.y, right.y);
     }
 
-//    protected double extrapolate (double x, int floorIndex) {
-//        Node left = getNode(floorIndex);
-//        Node right = left.next;
-//
-//        if (x >= left.x || x <= right.x) {
-//            throw new InterpolationException("x = " + x + " вне диапазона экстраполяции [" + left.x + ", " + right.x + "]");
-//        }
-//
-//        return interpolate(x, left.x, right.x, left.y, right.y);
-//    }
-
+    protected double extrapolate(double x, int floorIndex) {
+        Node left = getNode(floorIndex);
+        Node right = left.next;
+        return interpolate(x, left.x, right.x, left.y, right.y);
+    }
 
     // Реализация интерфейса insertable
     @Override

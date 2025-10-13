@@ -2,6 +2,7 @@ package org.example.functions;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.example.exceptions.*;
 
 public class LinkedListTabulatedFunctionTest {
     private static final double DELTA = 1e-10;
@@ -101,9 +102,15 @@ public class LinkedListTabulatedFunctionTest {
         LinkedListTabulatedFunction listFunc = new LinkedListTabulatedFunction(xValues, yValues);
         ArrayTabulatedFunction arrayFunc = new ArrayTabulatedFunction(xValues, yValues);
 
-        // Проверяем, что результаты совпадают
         for (double x = -0.5; x <= 3.5; x += 0.1) {
-            assertEquals(arrayFunc.apply(x), listFunc.apply(x), 1e-9);
+            double arrayResult = arrayFunc.apply(x);
+            double listResult = listFunc.apply(x);
+            if (Math.abs(arrayResult - listResult) > 1e-9) {
+                System.out.println("Расхождение при x=" + x +
+                        ": array=" + arrayResult +
+                        ", list=" + listResult);
+            }
+            assertEquals(arrayResult, listResult, 1e-9);
         }
     }
 
@@ -122,7 +129,7 @@ public class LinkedListTabulatedFunctionTest {
         new LinkedListTabulatedFunction(xValues, yValues);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = DifferentLengthOfArraysException.class)
     public void testConstructorWithDifferentArrayLengths() {
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0}; // Разная длина

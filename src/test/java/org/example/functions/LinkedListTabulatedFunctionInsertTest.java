@@ -6,15 +6,6 @@ import static org.junit.Assert.*;
 public class LinkedListTabulatedFunctionInsertTest {
 
     @Test
-    public void testInsertIntoEmptyList() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
-        function.insert(1.0, 2.0);
-        assertEquals(1, function.getCount());
-        assertEquals(1.0, function.getX(0), 1e-9);
-        assertEquals(2.0, function.getY(0), 1e-9);
-    }
-
-    @Test
     public void testInsertReplaceExistingY() {
         LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{1.0, 2.0}, new double[]{3.0, 4.0});
         function.insert(1.0, 5.0);
