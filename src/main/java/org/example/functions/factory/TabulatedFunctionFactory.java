@@ -1,5 +1,6 @@
 package org.example.functions.factory;
 
+import org.example.functions.StrictTabulatedFunction;
 import org.example.functions.TabulatedFunction;
 import org.example.functions.UnmodifiableTabulatedFunction;
 
@@ -9,6 +10,11 @@ public interface TabulatedFunctionFactory {
     default TabulatedFunction createUnmodifiable (double[] xValues, double[] yValues){
         TabulatedFunction function = create(xValues, yValues);
         return new UnmodifiableTabulatedFunction(function);
+    }
+
+    default TabulatedFunction createStrict(double[] xValues, double[] yValues){
+        TabulatedFunction function = create(xValues, yValues);
+        return new StrictTabulatedFunction(function);
     }
 }
 

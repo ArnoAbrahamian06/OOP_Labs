@@ -33,6 +33,33 @@ public class TabulatedFunctionFactoryTest {
             // Ожидаемое поведение
         }
     }
+    @Test
+    public void testArrayFactoryCreateStrict() {
+        TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+
+        TabulatedFunction strictFunction = factory.createStrict(xValues, yValues);
+
+        // Проверяем, что данные корректны
+        assertEquals(4, strictFunction.getCount());
+        assertEquals(1.0, strictFunction.getX(0), 1e-10);
+        assertEquals(10.0, strictFunction.getY(0), 1e-10);
+        assertEquals(4.0, strictFunction.getX(3), 1e-10);
+        assertEquals(40.0, strictFunction.getY(3), 1e-10);
+
+        // Проверяем, что изменение Y разрешено (Strict не запрещает изменения)
+        strictFunction.setY(0, 100.0);
+        assertEquals(100.0, strictFunction.getY(0), 1e-10);
+
+        // Проверяем, что интерполяция запрещена
+        try {
+            strictFunction.apply(1.5); // X между узлами
+            fail("Expected UnsupportedOperationException");
+        } catch (UnsupportedOperationException e) {
+            // Ожидаемое поведение для Strict
+        }
+    }
 
     @Test
     public void testArrayFactoryCreatesArrayTabulatedFunction() {
