@@ -76,11 +76,32 @@ public class TabulatedFunctionOperationService {
         });
     }
 
+    // Метод вычитания
     public TabulatedFunction sub(TabulatedFunction a, TabulatedFunction b) {
         return doOperation(a, b, new BiOperation() {
             @Override
             public double apply(double u, double v) {
                 return u - v;
+            }
+        });
+    }
+
+    // Метод умножения
+    public TabulatedFunction mult (TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, new BiOperation() {
+            @Override
+            public double apply(double u, double v) {
+                return u * v;
+            }
+        });
+    }
+
+    // Метод деления
+    public TabulatedFunction div(TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, new BiOperation() {
+            @Override
+            public double apply(double u, double v) {
+                return u / v;
             }
         });
     }
