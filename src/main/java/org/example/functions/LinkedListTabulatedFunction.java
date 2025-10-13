@@ -1,4 +1,4 @@
-package org.example.functions;
+ package org.example.functions;
 
 import org.example.exceptions.*;
 
@@ -334,6 +334,29 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public java.util.Iterator<Point> iterator() {
-        throw new UnsupportedOperationException();
+        return new java.util.Iterator<Point>() {
+            private Node node = head;
+            private int returned = 0;
+
+            @Override
+            public boolean hasNext() {
+                return node != null && returned < count;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
+                Point p = new Point(node.x, node.y);
+                if (returned == count - 1) {
+                    node = null;
+                } else {
+                    node = node.next;
+                }
+                returned++;
+                return p;
+            }
+        };
     }
 }
