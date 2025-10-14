@@ -5,7 +5,9 @@ import org.example.functions.TabulatedFunction;
 import org.example.functions.factory.ArrayTabulatedFunctionFactory;
 import org.example.functions.factory.TabulatedFunctionFactory;
 
-public class TabulatedDifferentialOperator implements DifferentialOperator<TabulatedFunction> {
+import java.io.Serializable;
+
+public class TabulatedDifferentialOperator implements DifferentialOperator<TabulatedFunction>, Serializable {
     private TabulatedFunctionFactory factory;
 
     public TabulatedDifferentialOperator() {

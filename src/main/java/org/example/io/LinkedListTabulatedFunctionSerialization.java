@@ -3,59 +3,59 @@ package org.example.io;
 import org.example.functions.LinkedListTabulatedFunction;
 import org.example.functions.TabulatedFunction;
 import org.example.operations.TabulatedDifferentialOperator;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import java.io.*;
 
 public class LinkedListTabulatedFunctionSerialization {
+
     public static void main(String[] args) {
-        String filePath = "output/serialized linked list functions.bin";
+        // Создаем исходную функцию
+        double[] xValues = {0.0, 1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {0.0, 1.0, 4.0, 9.0, 16.0}; // f(x) = x²
 
-        // Часть 1: Сериализация
-        try (
-                FileOutputStream fileOut = new FileOutputStream(filePath);
-                BufferedOutputStream bufOut = new BufferedOutputStream(fileOut)
-        ) {
-            // Создаём исходную функцию: f(x) = x^2 на [0, 2] с 5 точками
-            double[] x = {0.0, 0.5, 1.0, 1.5, 2.0};
-            double[] y = {0.0, 0.25, 1.0, 2.25, 4.0};
-            TabulatedFunction original = new LinkedListTabulatedFunction(x, y);
+        LinkedListTabulatedFunction originalFunction = new LinkedListTabulatedFunction(xValues, yValues);
 
-            TabulatedDifferentialOperator diffOp = new TabulatedDifferentialOperator();
+        // Находим производные
+        TabulatedDifferentialOperator differentialOperator = new TabulatedDifferentialOperator();
+        TabulatedFunction firstDerivative = differentialOperator.derive(originalFunction);
+        TabulatedFunction secondDerivative = differentialOperator.derive(firstDerivative);
 
-            // Первая производная: f'(x) = 2x
-            TabulatedFunction firstDerivative = diffOp.derive(original);
+        // Сериализация функций
+        try (FileOutputStream fileOutputStream = new FileOutputStream("output/serialized linked list functions.bin");
+             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
 
-            // Вторая производная: f''(x) = 2
-            TabulatedFunction secondDerivative = diffOp.derive(firstDerivative);
+            // Создаем ObjectOutputStream для сериализации
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
 
             // Сериализуем все три функции
-            FunctionsIO.serialize(bufOut, original);
-            FunctionsIO.serialize(bufOut, firstDerivative);
-            FunctionsIO.serialize(bufOut, secondDerivative);
+            objectOutputStream.writeObject(originalFunction);
+            objectOutputStream.writeObject(firstDerivative);
+            objectOutputStream.writeObject(secondDerivative);
 
-            System.out.println("Сериализация завершена.");
+            System.out.println("Функции успешно сериализованы в файл: output/serialized linked list functions.bin");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Часть 2: Десериализация
-        try (
-                FileInputStream fileIn = new FileInputStream(filePath);
-                BufferedInputStream bufIn = new BufferedInputStream(fileIn)
-        ) {
-            TabulatedFunction original = FunctionsIO.deserialize(bufIn);
-            TabulatedFunction firstDerivative = FunctionsIO.deserialize(bufIn);
-            TabulatedFunction secondDerivative = FunctionsIO.deserialize(bufIn);
+        // Десериализация функций
+        try (FileInputStream fileInputStream = new FileInputStream("output/serialized linked list functions.bin");
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
 
-            System.out.println("<<< Исходная функция >>>");
-            System.out.println(original);
-            System.out.println("\n<<< Первая производная >>>");
-            System.out.println(firstDerivative);
-            System.out.println("\n<<< Вторая производная >>>");
-            System.out.println(secondDerivative);
+            // Десериализуем все три функции
+            TabulatedFunction deserializedOriginal = FunctionsIO.deserialize(bufferedInputStream);
+            TabulatedFunction deserializedFirstDerivative = FunctionsIO.deserialize(bufferedInputStream);
+            TabulatedFunction deserializedSecondDerivative = FunctionsIO.deserialize(bufferedInputStream);
+
+            // Выводим значения функций
+            System.out.println("\nИсходная функция:");
+            System.out.println(deserializedOriginal.toString());
+
+            System.out.println("\nПервая производная:");
+            System.out.println(deserializedFirstDerivative.toString());
+
+            System.out.println("\nВторая производная:");
+            System.out.println(deserializedSecondDerivative.toString());
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
