@@ -1,10 +1,13 @@
 package org.example.functions;
 
 import java.util.Arrays;
+import java.io.Serializable;
 
 import org.example.exceptions.*;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable  {
+    private static final long serialVersionUID = 1L; // Поле для сериализации
+
     private int count;
     private int capacity; // Добавленное поле для запаса памяти
     private double[] xValues;

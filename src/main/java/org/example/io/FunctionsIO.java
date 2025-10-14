@@ -112,4 +112,19 @@ public final class FunctionsIO {
         }
         return factory.create(xValues, yValues);
     }
+
+    public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
+        if (stream == null || function == null) {
+            throw new IllegalArgumentException("Поток или функция не может быть 0");
+        }
+
+        // Создаем ObjectOutputStream для сериализации объекта
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(stream);
+
+        // Сериализуем функцию
+        objectOutputStream.writeObject(function);
+
+        // Сбрасываем буфер, но не закрываем поток
+        objectOutputStream.flush();
+    }
 }
