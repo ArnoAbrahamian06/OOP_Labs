@@ -6,7 +6,6 @@ import org.example.functions.LinkedListTabulatedFunction;
 
 import java.io.*;
 
-import static org.example.io.FunctionsIO.writeTabulatedFunction;
 
 public class TabulatedFunctionFileOutputStream {
     public static void main(String[] args) {
