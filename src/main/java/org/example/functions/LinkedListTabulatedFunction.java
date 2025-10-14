@@ -2,7 +2,9 @@
 
 import org.example.exceptions.*;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
+import java.io.Serializable;
+
+ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable, Serializable {
     protected static class Node {
         public Node next;
         public Node prev;
@@ -17,6 +19,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     private Node head;
     protected int count;
+    private static final long serialVersionUID = 1L; // Поле для сериализации
 
     // Конструктор через дискретизацию функции
     public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
