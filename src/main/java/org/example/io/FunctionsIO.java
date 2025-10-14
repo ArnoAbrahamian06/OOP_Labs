@@ -15,6 +15,13 @@ public final class FunctionsIO {
         throw new UnsupportedOperationException();
     }
 
+    public static TabulatedFunction deserialize(BufferedInputStream stream)
+            throws IOException, ClassNotFoundException {
+        ObjectInputStream objectInputStream = new ObjectInputStream(stream);
+        TabulatedFunction function = (TabulatedFunction) objectInputStream.readObject();
+        return function;
+    }
+
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function){
         PrintWriter printWriter = new PrintWriter(writer);
 
