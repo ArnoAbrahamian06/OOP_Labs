@@ -9,35 +9,24 @@ import java.io.*;
 public class TabulatedFunctionFileWriter {
 
     public static void main(String[] args) {
-        // Создаем директорию output, если она не существует
-        File outputDir = new File("output");
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
 
-        // Создаем две табулированные функции
         double[] xValues = {0.0, 1.0, 2.0, 3.0, 4.0};
-        double[] yValues = {0.0, 1.0, 4.0, 9.0, 16.0}; // f(x) = x²
+        double[] yValues = {0.0, 1.0, 4.0, 9.0, 16.0}; // f(x) = x^2
 
         TabulatedFunction arrayFunction = new ArrayTabulatedFunction(xValues, yValues);
         TabulatedFunction linkedListFunction = new LinkedListTabulatedFunction(xValues, yValues);
 
-        // Используем одну конструкцию try-with-resources для обоих потоков
-        try (FileWriter arrayWriter = new FileWriter("output/array function.txt");
-             FileWriter linkedListWriter = new FileWriter("output/linked list function.txt");
-             BufferedWriter bufferedArrayWriter = new BufferedWriter(arrayWriter);
-             BufferedWriter bufferedLinkedListWriter = new BufferedWriter(linkedListWriter)) {
+        try (FileWriter fileWriter1 = new FileWriter("output/array_function.txt");
+             FileWriter fileWriter2 = new FileWriter("output/linked_list_function.txt");
+             BufferedWriter bufferedWriter1 = new BufferedWriter(fileWriter1);
+             BufferedWriter bufferedWriter2 = new BufferedWriter(fileWriter2)) {
 
             // Записываем функции в соответствующие файлы
-            FunctionsIO.writeTabulatedFunction(bufferedArrayWriter, arrayFunction);
-            FunctionsIO.writeTabulatedFunction(bufferedLinkedListWriter, linkedListFunction);
+            FunctionsIO.writeTabulatedFunction(bufferedWriter1, arrayFunction);
+            FunctionsIO.writeTabulatedFunction(bufferedWriter2, linkedListFunction);
 
-            System.out.println("Функции успешно записаны в файлы:");
-            System.out.println("- output/array function.txt");
-            System.out.println("- output/linked list function.txt");
-
-        } catch (IOException e) {
-            // Обрабатываем исключение - выводим стектрейс в поток ошибок
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
