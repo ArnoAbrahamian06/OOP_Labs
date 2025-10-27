@@ -4,7 +4,6 @@ import org.example.functions.TabulatedFunction;
 
 public class MultiplyingTask implements Runnable {
     private final TabulatedFunction function;
-    private volatile boolean completed = false;
 
     public MultiplyingTask(TabulatedFunction function) {
         this.function = function;
@@ -20,10 +19,5 @@ public class MultiplyingTask implements Runnable {
         }
         System.out.println(Thread.currentThread().getName() +
                 " finished.");
-        completed = true;
-    }
-
-    public boolean isCompleted() {
-        return completed;
     }
 }
