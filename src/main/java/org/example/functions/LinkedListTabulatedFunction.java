@@ -196,6 +196,9 @@ import java.io.Serializable;
 
     @Override
     public double getX(int index) {
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс " + index + " выходит за границы [0, " + (count - 1) + "]");
+        }
         return getNode(index).x;
     }
 

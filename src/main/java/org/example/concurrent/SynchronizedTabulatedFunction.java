@@ -61,27 +61,6 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        synchronized (this) {
-            return function.equals(obj);
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        synchronized (this) {
-            return function.hashCode();
-        }
-    }
-
-    @Override
-    public String toString() {
-        synchronized (this) {
-            return function.toString();
-        }
-    }
-
-    @Override
     public Iterator<Point> iterator() {
         Point[] pointsCopy;
         synchronized (this) {
