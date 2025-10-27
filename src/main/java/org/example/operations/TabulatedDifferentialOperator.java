@@ -4,6 +4,7 @@ import org.example.functions.Point;
 import org.example.functions.TabulatedFunction;
 import org.example.functions.factory.ArrayTabulatedFunctionFactory;
 import org.example.functions.factory.TabulatedFunctionFactory;
+import org.example.concurrent.SynchronizedTabulatedFunction;
 
 import java.io.Serializable;
 
@@ -57,6 +58,21 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
 
         return factory.create(xValues, yValues);
     }
+
+    public TabulatedFunction deriveSynchronously(TabulatedFunction function) {
+        SynchronizedTabulatedFunction syncFunction;
+
+        if (function instanceof SynchronizedTabulatedFunction) {
+            syncFunction = (SynchronizedTabulatedFunction) function;
+        } else {
+            syncFunction = new SynchronizedTabulatedFunction(function);
+        }
+
+        return syncFunction.doSynchronously(new SynchronizedTabulatedFunction.Operation<TabulatedFunction>() {
+            @Override
+            public TabulatedFunction apply(SynchronizedTabulatedFunction func) {
+                return derive(func);
+            }
+        });
+    }
 }
-
-
