@@ -15,6 +15,18 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
         this.function = Objects.requireNonNull(function, "функция не должна быть равна null");
     }
 
+    // Вложенный функциональный интерфейс
+    @FunctionalInterface
+    public interface Operation<T> {
+        T apply(SynchronizedTabulatedFunction function);
+    }
+
+    public <T> T doSynchronously(Operation<? extends T> operation) {
+        synchronized (this) {
+            return operation.apply(this);
+        }
+    }
+
     @Override
     public synchronized int getCount() {
         return function.getCount();

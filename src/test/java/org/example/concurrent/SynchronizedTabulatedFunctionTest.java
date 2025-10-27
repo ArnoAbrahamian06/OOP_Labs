@@ -2,6 +2,7 @@ package org.example.concurrent;
 
 import org.example.functions.Point;
 import org.example.functions.ArrayTabulatedFunction;
+import org.example.functions.LinkedListTabulatedFunction;
 import org.example.functions.TabulatedFunction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,9 @@ class SynchronizedTabulatedFunctionTest {
 
     private TabulatedFunction innerFunction;
     private SynchronizedTabulatedFunction syncFunction;
+
+    private SynchronizedTabulatedFunction syncFunction2;
+    private TabulatedFunction originalFunction;
     private final double[] xValues = {1.0, 2.0, 3.0, 4.0};
     private final double[] yValues = {10.0, 20.0, 30.0, 40.0};
 
@@ -22,6 +26,142 @@ class SynchronizedTabulatedFunctionTest {
     void setUp() {
         innerFunction = new ArrayTabulatedFunction(xValues, yValues);
         syncFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {1.0, 4.0, 9.0, 16.0};
+        originalFunction = new LinkedListTabulatedFunction(xValues, yValues);
+        syncFunction2 = new SynchronizedTabulatedFunction(originalFunction);
+    }
+
+    @Test
+    void testDoSynchronouslyWithReturnValue() {
+        // Operation с возвращаемым значением Integer
+        SynchronizedTabulatedFunction.Operation<Integer> countOperation =
+                new SynchronizedTabulatedFunction.Operation<Integer>() {
+                    @Override
+                    public Integer apply(SynchronizedTabulatedFunction function) {
+                        return function.getCount();
+                    }
+                };
+
+        Integer result = syncFunction2.doSynchronously(countOperation);
+        assertEquals(4, (int) result, "Количество точек должно совпадать");
+    }
+
+    @Test
+    void testDoSynchronouslyWithLambdaReturnValue() {
+        // Operation с возвращаемым значением Double через лямбда
+        Double result = syncFunction2.doSynchronously(func -> {
+            double sum = 0;
+            for (int i = 0; i < func.getCount(); i++) {
+                sum += func.getY(i);
+            }
+            return sum;
+        });
+
+        assertEquals(30.0, result, 1e-9, "Сумма Y должна быть правильной");
+    }
+
+    @Test
+    void testDoSynchronouslyWithVoidOperation() {
+        // Operation с void возвращаемым типом (Void)
+        SynchronizedTabulatedFunction.Operation<Void> modifyOperation =
+                new SynchronizedTabulatedFunction.Operation<Void>() {
+                    @Override
+                    public Void apply(SynchronizedTabulatedFunction function) {
+                        for (int i = 0; i < function.getCount(); i++) {
+                            function.setY(i, function.getY(i) * 2);
+                        }
+                        return null;
+                    }
+                };
+
+        Void result = syncFunction2.doSynchronously(modifyOperation);
+        assertNull(result, "Результат Void операции должен быть null");
+
+        // Проверяем, что значения действительно изменились
+        assertEquals(2.0, originalFunction.getY(0), 1e-9, "Y[0] должен быть удвоен");
+        assertEquals(8.0, originalFunction.getY(1), 1e-9, "Y[1] должен быть удвоен");
+    }
+
+    @Test
+    void testDoSynchronouslyWithVoidLambda() {
+        // Void операция через лямбду
+        Void result = syncFunction2.doSynchronously(func -> {
+            func.setY(0, 100.0);
+            func.setY(1, 200.0);
+            return null;
+        });
+
+        assertNull(result, "Результат Void лямбды должен быть null");
+        assertEquals(100.0, originalFunction.getY(0), 1e-9, "Y[0] должен быть изменен");
+        assertEquals(200.0, originalFunction.getY(1), 1e-9, "Y[1] должен быть изменен");
+    }
+
+    @Test
+    void testDoSynchronouslyWithStringReturn() {
+        // Operation с возвращаемым значением String
+        String result = syncFunction2.doSynchronously(func -> {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < func.getCount(); i++) {
+                sb.append(String.format("(%.1f, %.1f) ", func.getX(i), func.getY(i)));
+            }
+            return sb.toString().trim();
+        });
+
+        String expected = "(1,0, 1,0) (2,0, 4,0) (3,0, 9,0) (4,0, 16,0)";
+        assertEquals(expected, result, "Строковое представление должно быть правильным");
+    }
+
+    @Test
+    void testDoSynchronouslyWithBooleanReturn() {
+        // Operation с возвращаемым значением Boolean
+        Boolean result = syncFunction2.doSynchronously(func -> {
+            return func.getCount() > 0 && func.getY(0) == 1.0;
+        });
+
+        assertTrue(result, "Булев результат должен быть true");
+    }
+
+    @Test
+    void testDoSynchronouslyWithComplexObjectReturn() {
+        // Operation с возвращаемым значением сложного объекта
+        Point[] result = syncFunction2.doSynchronously(func -> {
+            Point[] points = new Point[func.getCount()];
+            for (int i = 0; i < func.getCount(); i++) {
+                points[i] = new Point(func.getX(i), func.getY(i));
+            }
+            return points;
+        });
+
+        assertNotNull(result, "Массив точек не должен быть null");
+        assertEquals(4, result.length, "Должно быть 4 точки");
+        assertEquals(1.0, result[0].x, 1e-9, "Первая точка X");
+        assertEquals(1.0, result[0].y, 1e-9, "Первая точка Y");
+    }
+
+    @Test
+    void testDoSynchronouslyWithStateModification() {
+        // Проверяем, что состояние сохраняется между вызовами
+        syncFunction2.doSynchronously(func -> {
+            func.setY(0, 50.0);
+            return null;
+        });
+
+        Double result = syncFunction2.doSynchronously(func -> func.getY(0));
+        assertEquals(50.0, result, 1e-9, "Измененное состояние должно сохраняться");
+    }
+
+    @Test
+    void testDoSynchronouslyMultipleCalls() {
+        // Множественные вызовы doSynchronously
+        Integer count1 = syncFunction2.doSynchronously(TabulatedFunction::getCount);
+        Double leftBound = syncFunction2.doSynchronously(TabulatedFunction::leftBound);
+        Double rightBound = syncFunction2.doSynchronously(TabulatedFunction::rightBound);
+
+        assertEquals(4, (int) count1, "Count должен быть 4");
+        assertEquals(1.0, leftBound, 1e-9, "Левая граница");
+        assertEquals(4.0, rightBound, 1e-9, "Правая граница");
     }
 
     @Test
