@@ -22,7 +22,7 @@ import java.io.Serializable;
     private static final long serialVersionUID = 1L; // Поле для сериализации
 
     // Конструктор через дискретизацию функции
-    public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
+    public  LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
         if (count < 2) {
             throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
         }
