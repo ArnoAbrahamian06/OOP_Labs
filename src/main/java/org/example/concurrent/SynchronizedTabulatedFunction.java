@@ -19,6 +19,18 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
         logger.debug("Создан SynchronizedTabulatedFunction для функции: {}", function.getClass().getSimpleName());
     }
 
+    // Вложенный функциональный интерфейс
+    @FunctionalInterface
+    public interface Operation<T> {
+        T apply(SynchronizedTabulatedFunction function);
+    }
+
+    public <T> T doSynchronously(Operation<? extends T> operation) {
+        synchronized (this) {
+            return operation.apply(this);
+        }
+    }
+
     @Override
     public synchronized int getCount() {
         return function.getCount();
