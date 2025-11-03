@@ -3,16 +3,20 @@ package org.example.concurrent;
 import org.example.functions.Point;
 import org.example.functions.TabulatedFunction;
 import org.example.operations.TabulatedFunctionOperationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class SynchronizedTabulatedFunction implements TabulatedFunction {
+    private static final Logger logger = LoggerFactory.getLogger(SynchronizedTabulatedFunction.class);
     private final TabulatedFunction function;
 
     public SynchronizedTabulatedFunction(TabulatedFunction function) {
         this.function = Objects.requireNonNull(function, "функция не должна быть равна null");
+        logger.debug("Создан SynchronizedTabulatedFunction для функции: {}", function.getClass().getSimpleName());
     }
 
     @Override
@@ -32,7 +36,9 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     @Override
     public synchronized void setY(int index, double value) {
+        logger.debug("Установка значения Y[{}] = {}", index, value);
         function.setY(index, value);
+        logger.debug("Значение Y[{}] успешно установлено", index);
     }
 
     @Override
@@ -57,7 +63,10 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     @Override
     public synchronized double apply(double x) {
-        return function.apply(x);
+        logger.debug("Вычисление функции для x = {}", x);
+        double result = function.apply(x);
+        logger.debug("Результат применения функции для x = {}: {}", x, result);
+        return result;
     }
 
     @Override
