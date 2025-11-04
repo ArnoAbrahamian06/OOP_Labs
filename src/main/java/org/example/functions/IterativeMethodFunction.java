@@ -1,6 +1,10 @@
 package org.example.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class IterativeMethodFunction implements MathFunction {
+    private static final Logger log = LoggerFactory.getLogger(IterativeMethodFunction.class);
     private final MathFunction phi;
     private final int maxIterations;
     private final double tolerance;
@@ -25,12 +29,14 @@ public class IterativeMethodFunction implements MathFunction {
         do {
             xNext = phi.apply(xCurrent);
             if (Math.abs(xNext - xCurrent) < tolerance) {
+        log.debug("Итерационный метод сошёлся за {} итераций: x*={} (старт={})", iterations, xNext, x0);
                 return xNext;
             }
             xCurrent = xNext;
             iterations++;
         } while (iterations < maxIterations);
 
+        log.warn("Итерационный метод не сошёлся за maxIterations={}, последнее x={} (старт={})", maxIterations, xNext, x0);
         return xNext;
     }
 }

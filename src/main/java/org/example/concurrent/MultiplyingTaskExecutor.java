@@ -35,7 +35,6 @@ public class MultiplyingTaskExecutor {
         logger.info("Запуск всех потоков");
         for (Thread thread : threads) {
             thread.start();
-            logger.debug("Запущен поток: {}", thread.getName());
         }
 
         // Ждём завершения КАЖДОГО потока с помощью join()

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.io.Serializable;
 
 import org.example.exceptions.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable  {
     private static final long serialVersionUID = 1L; // Поле для сериализации
@@ -12,6 +14,8 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     private int capacity; // Добавленное поле для запаса памяти
     private double[] xValues;
     private double[] yValues;
+
+    private static final Logger log = LoggerFactory.getLogger(ArrayTabulatedFunction.class);
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
         if (xValues.length < 2) {
@@ -25,6 +29,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         this.capacity = count + 5; // Начальный запас памяти
         this.xValues = Arrays.copyOf(xValues, capacity);
         this.yValues = Arrays.copyOf(yValues, capacity);
+        log.debug("Создан ArrayTabulatedFunction из массивов: размер={}, вместимость={}, левая граница={}, правая граница={}", this.count, this.capacity, this.xValues[0], this.xValues[this.count - 1]);
     }
 
     public ArrayTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
@@ -47,6 +52,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
             xValues[i] = xFrom + i * step;
             yValues[i] = source.apply(xValues[i]);
         }
+        log.debug("Создан ArrayTabulatedFunction дискретизацией: размер={}, диапазон=[{}, {}], шаг={}", this.count, xFrom, xTo, step);
     }
 
     @Override
@@ -164,6 +170,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         // Если x уже существует, заменяем y
         if (index != -1) {
             yValues[index] = y;
+            log.debug("insert: заменена существующая точка x={} по индексу={} на y={}", x, index, y);
             return;
         }
 
@@ -172,6 +179,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
             capacity += 5; // Увеличиваем запас памяти
             xValues = Arrays.copyOf(xValues, capacity);
             yValues = Arrays.copyOf(yValues, capacity);
+            log.debug("insert: увеличена вместимость до {}", capacity);
         }
 
         // Находим позицию для вставки
@@ -188,6 +196,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         xValues[insertIndex] = x;
         yValues[insertIndex] = y;
         count++;
+        log.debug("insert: вставлена точка x={}, y={} по индексу={}, новый размер={}", x, y, insertIndex, count);
     }
 
     // Реализация интерфейса Remove
@@ -213,6 +222,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
 
         count--;
+        log.debug("remove: удалён индекс={}, новый размер={}", index, count);
     }
 
     @Override

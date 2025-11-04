@@ -1,10 +1,15 @@
 package org.example.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StrictTabulatedFunction implements TabulatedFunction {
+    private static final Logger log = LoggerFactory.getLogger(StrictTabulatedFunction.class);
     private final TabulatedFunction function;
 
     public StrictTabulatedFunction(TabulatedFunction function) {
         this.function = function;
+        log.info("Создан объект класса StrictTabulatedFunction");
     }
 
     @Override

@@ -2,8 +2,12 @@ package org.example.functions;
 
 import org.example.exceptions.ArrayIsNotSortedException;
 import org.example.exceptions.DifferentLengthOfArraysException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractTabulatedFunction.class);
 
     public abstract int getCount();
     public abstract double getX(int index);
@@ -62,15 +66,19 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
     @Override
     public double apply(double x) {
         if (x < leftBound()) {
+            log.debug("apply: x={} < левая граница={}, экстраполяция влево", x, leftBound());
             return extrapolateLeft(x);
         } else if (x > rightBound()) {
+            log.debug("apply: x={} > правая граница={}, экстраполяция вправо", x, rightBound());
             return extrapolateRight(x);
         } else {
             int index = indexOfX(x);
             if (index != -1) {
+                log.debug("apply: точное совпадение по индексу={}, x={}, y={} ", index, x, getY(index));
                 return getY(index);
             } else {
                 int floorIndex = floorIndexOfX(x);
+                log.debug("apply: интерполяция x={} с floorIndex={}", x, floorIndex);
                 return interpolate(x, floorIndex);
             }
         }

@@ -1,12 +1,17 @@
 package org.example.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class UnmodifiableTabulatedFunction implements TabulatedFunction {
+    private static final Logger log = LoggerFactory.getLogger(UnmodifiableTabulatedFunction.class);
     private final TabulatedFunction function;
 
     public UnmodifiableTabulatedFunction(TabulatedFunction function) {
+        log.info("Создан объект класса UnmodifiableTabulatedFunction");
         this.function = function;
     }
 

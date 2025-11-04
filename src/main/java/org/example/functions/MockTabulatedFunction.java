@@ -1,18 +1,24 @@
 package org.example.functions;
 import java.util.Iterator;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockTabulatedFunction extends AbstractTabulatedFunction {
     private final double x0;
     private final double x1;
     private double y0;
     private double y1;
+    private static final Logger log = LoggerFactory.getLogger(MockTabulatedFunction.class);
+
 
     public MockTabulatedFunction(double x0, double x1, double y0, double y1) {
         this.x0 = x0;
         this.x1 = x1;
         this.y0 = y0;
         this.y1 = y1;
+
+        log.info("Создан MockTabulatedFunction: точки ({}, {}) и ({}, {})", x0, y0, x1, y1);
+        log.debug("Диапазон X: [{}, {}], диапазон Y: [{}, {}]", x0, x1, y0, y1);
     }
 
     @Override

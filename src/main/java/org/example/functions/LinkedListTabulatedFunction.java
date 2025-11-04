@@ -3,8 +3,11 @@
 import org.example.exceptions.*;
 
 import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
  public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable, Serializable {
+    private static final Logger log = LoggerFactory.getLogger(LinkedListTabulatedFunction.class);
     protected static class Node {
         public Node next;
         public Node prev;
@@ -44,6 +47,7 @@ import java.io.Serializable;
                 addNode(x, source.apply(x));
             }
         }
+        log.debug("Создан LinkedListTabulatedFunction: размер={}, диапазон=[{}, {}]", this.count, xFrom, xTo);
     }
 
     // Конструктор из массивов x и y
@@ -58,6 +62,7 @@ import java.io.Serializable;
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
         }
+        log.debug("Создан LinkedListTabulatedFunction из массивов: размер={}, левая граница={}, правая граница={}", this.count, head.x, head.prev.x);
     }
 
 
@@ -88,6 +93,7 @@ import java.io.Serializable;
         nodeToRemove.prev = null;
 
         count--;
+        log.debug("remove: удалён индекс={}, новый размер={}", index, count);
     }
 
 
@@ -106,6 +112,7 @@ import java.io.Serializable;
             head.prev = newNode;
         }
         count++;
+        log.debug("addNode: (x={}, y={}), новый размер={}", x, y, count);
     }
 
     protected Node floorNodeOfX(double x) {
@@ -146,23 +153,27 @@ import java.io.Serializable;
     @Override
     public double apply(double x) {
         if (count == 0) {
-            System.out.println("Функция не содержит точек");
+            log.warn("apply: функция пуста, возвращено 0");
             return 0;
         }
 
         // Проверка точного совпадения
         Node exactNode = findNodeByX(x);
         if (exactNode != null) {
+            log.debug("apply: точное совпадение x={} -> y={}", x, exactNode.y);
             return exactNode.y;
         }
 
         // Определение режима (экстраполяция/интерполяция)
         if (x < head.x) {
+            log.debug("apply: x={} < левая граница={}, экстраполяция влево", x, head.x);
             return extrapolateLeft(x);
         } else if (x > head.prev.x) {
+            log.debug("apply: x={} > правая граница={}, экстраполяция вправо", x, head.prev.x);
             return extrapolateRight(x);
         } else {
             Node leftNode = floorNodeOfX(x);
+            log.debug("apply: интерполяция x={} между [{}, {}]", x, leftNode.x, leftNode.next.x);
             return interpolate(x, leftNode.x, leftNode.next.x, leftNode.y, leftNode.next.y);
         }
     }
@@ -302,6 +313,7 @@ import java.io.Serializable;
         // Если список пуст, просто добавляем узел
         if (count == 0) {
             addNode(x, y);
+            log.debug("insert: вставлен первый узел x={}, y={}", x, y);
             return;
         }
 
@@ -309,6 +321,7 @@ import java.io.Serializable;
         Node existingNode = findNodeByX(x);
         if (existingNode != null) {
             existingNode.y = y; // Заменяем y и выходим
+            log.debug("insert: заменён существующий узел x={} значением y={}", x, y);
             return;
         }
 
@@ -321,10 +334,12 @@ import java.io.Serializable;
             head.prev = newNode;
             head = newNode; // Обновляем голову
             count++;
+            log.debug("insert: вставка в голову x={}, y={}", x, y);
         }
         // Если x больше последнего узла, добавляем в конец
         else if (x > head.prev.x) {
             addNode(x, y);
+            log.debug("insert: вставка в хвост x={}, y={}", x, y);
         }
         // Вставляем в середину списка
         else {
@@ -335,6 +350,7 @@ import java.io.Serializable;
             floorNode.next.prev = newNode;
             floorNode.next = newNode;
             count++;
+            log.debug("insert: вставка после x={}, новый узел x={}, y={}", floorNode.x, x, y);
         }
     }
 
