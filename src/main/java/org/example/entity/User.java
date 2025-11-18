@@ -10,7 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_role", columnList = "role"),
+        @Index(name = "idx_user_created_at", columnList = "createdAt")
+})
 public class User {
 
     @Id

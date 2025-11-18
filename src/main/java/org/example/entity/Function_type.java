@@ -4,7 +4,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Functions_types")
+@Table(name = "functions_types", indexes = {
+        @Index(name = "idx_ft_name", columnList = "name"),
+        @Index(name = "idx_ft_loc_name", columnList = "loc_name"),
+        @Index(name = "idx_ft_priority", columnList = "priority"),
+        @Index(name = "idx_ft_tabulated_function_id", columnList = "tabulated_function_id")
+})
 public class Function_type {
 
     @Id

@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "Tabulated_functions")
+@Table(name = "tabulated_functions", indexes = {
+        @Index(name = "idx_tf_user_id", columnList = "user_id"),
+        @Index(name = "idx_tf_created_at", columnList = "createdAt")
+})
 public class Tabulated_function {
 
     @Id
