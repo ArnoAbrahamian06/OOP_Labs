@@ -2,6 +2,9 @@ package org.example.entity;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +35,9 @@ public class User {
     private LocalDateTime createdAt;
 
     // Связь One-to-Many с Tabulated_function
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Tabulated_function> Tabulated_functions = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<Tabulated_function> tabulatedFunctions = new ArrayList<>();
 
     // Обязательные конструкторы
     public User() {}
@@ -76,16 +80,16 @@ public class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public List<Tabulated_function> getTabulated_functions() { return Tabulated_functions; }
-    public void setTabulated_functions(List<Tabulated_function> Tabulated_functions) { this.Tabulated_functions = Tabulated_functions; }
+    public List<Tabulated_function> getTabulated_functions() { return tabulatedFunctions; }
+    public void setTabulated_functions(List<Tabulated_function> Tabulated_functions) { this.tabulatedFunctions = Tabulated_functions; }
 
     // Вспомогательные методы
     public void addTabulated_function(Tabulated_function Tabulated_function) {
-        Tabulated_functions.add(Tabulated_function);
+        tabulatedFunctions.add(Tabulated_function);
     }
 
     public void removeTabulated_function(Tabulated_function Tabulated_function) {
-        Tabulated_functions.remove(Tabulated_function);
+        tabulatedFunctions.remove(Tabulated_function);
     }
 
     @Override

@@ -2,6 +2,10 @@ package org.example.entity;
 
 import jakarta.persistence.*;
 
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +18,9 @@ public class Tabulated_function {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-
-    // Связь One-to-Many с Function_Types
-    @OneToMany(mappedBy = "tabulatedFunction", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Function_type> Functions_types = new ArrayList<>();
+    @OneToMany(mappedBy = "tabulatedFunction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<Function_type> functionTypes = new ArrayList<>();
 
     @Column(name = "serialized_data")
     private String serializedData;
@@ -29,12 +31,10 @@ public class Tabulated_function {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Связь Many-to-One с User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Обязательные конструкторы
     public Tabulated_function() {}
 
     public Tabulated_function(String serializedData, User user) {
@@ -44,7 +44,6 @@ public class Tabulated_function {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Жизненный цикл Entity - автоматическое обновление дат
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -58,29 +57,29 @@ public class Tabulated_function {
         updatedAt = LocalDateTime.now();
     }
 
-
-    // Геттеры и сеттеры
+    // Геттеры
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getSerializedData() { return serializedData; }
-    public void setSerializedData(String serializedData) { this.serializedData = serializedData; }
-
     public User getUser() { return user; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public List<Function_type> getFunctionTypes() { return functionTypes; }
 
-    public List<Function_type> getFunction_types() { return Functions_types; }
-    public void setFunction_types(List<Function_type> Function_types) { this.Functions_types = Function_types; }
+    // Сеттеры
+    public void setId(Long id) { this.id = id; }
+    public void setSerializedData(String serializedData) { this.serializedData = serializedData; }
+    public void setUser(User user) { this.user = user; } // ДОБАВЬТЕ ЭТОТ СЕТТЕР
+    public void setFunctionTypes(List<Function_type> functionTypes) { this.functionTypes = functionTypes; }
 
-    // Вспомогательные методы
-    public void addFunction_types(Function_type Function_type) {
-        Functions_types.add(Function_type);
+    // Исправьте методы добавления/удаления
+    public void addFunctionType(Function_type functionType) {
+        functionTypes.add(functionType);
+        functionType.setTabulatedFunction(this); // Устанавливаем обратную связь
     }
 
-    public void removeFunction_types(Function_type Function_type) {
-        Functions_types.remove(Function_type);
+    public void removeFunctionType(Function_type functionType) {
+        functionTypes.remove(functionType);
+        functionType.setTabulatedFunction(null); // Убераем связь
     }
 
     @Override
