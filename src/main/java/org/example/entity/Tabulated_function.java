@@ -17,7 +17,7 @@ public class Tabulated_function {
     @Enumerated(EnumType.STRING)
 
     // Связь One-to-Many с Function_Types
-    @OneToMany(mappedBy = "function_type", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tabulatedFunction", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Function_type> Functions_types = new ArrayList<>();
 
     @Column(name = "serialized_data")
@@ -66,7 +66,7 @@ public class Tabulated_function {
     public String getSerializedData() { return serializedData; }
     public void setSerializedData(String serializedData) { this.serializedData = serializedData; }
 
-    public User getUserID() { return user; }
+    public User getUser() { return user; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

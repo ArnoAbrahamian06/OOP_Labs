@@ -22,7 +22,7 @@ public class Function_type {
     private String locName;
 
     @Column(name = "priority")
-    private String priority;
+    private Integer priority;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -32,17 +32,17 @@ public class Function_type {
 
     // Связь Many-to-One с Tabulated_function
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Tabulated_function_id", nullable = false)
-    private Tabulated_function tabulated_function;
+    @JoinColumn(name = "tabulated_function_id", nullable = false)
+    private Tabulated_function tabulatedFunction;
 
     // Обязательные конструкторы
     public Function_type() {}
 
-    public Function_type(String name, String locName, String priority, Tabulated_function tabulated_function) {
+    public Function_type(String name, String locName, Integer priority, Tabulated_function tabulated_function) {
         this.name = name;
         this.locName = locName;
         this.priority = priority;
-        this.tabulated_function = tabulated_function;
+        this.tabulatedFunction = tabulated_function;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -69,11 +69,13 @@ public class Function_type {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    public Tabulated_function getTabulated_function() { return tabulatedFunction; }
+
     public String getLocName() { return locName; }
     public void setLocName(String locName) { this.locName = locName; }
 
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
+    public Integer getPriority() { return priority; }
+    public void setPriority(Integer priority) { this.priority = priority; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
