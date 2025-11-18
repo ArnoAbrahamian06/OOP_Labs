@@ -26,7 +26,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.4.14</version>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
