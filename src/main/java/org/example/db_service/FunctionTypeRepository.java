@@ -238,7 +238,7 @@ public class FunctionTypeRepository {
     }
 
     // Вспомогательный метод для маппинга ResultSet в FunctionType
-    private FunctionType mapResultSetToFunctionType(ResultSet rs) throws SQLException {
+    FunctionType mapResultSetToFunctionType(ResultSet rs) throws SQLException {
         FunctionType functionType = new FunctionType();
         functionType.setId(rs.getInt("id"));
         functionType.setName(rs.getString("name"));
