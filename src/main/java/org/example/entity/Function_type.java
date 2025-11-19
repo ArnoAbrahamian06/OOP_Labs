@@ -71,6 +71,7 @@ public class Function_type {
     // Сеттеры
     public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setLocName(String locName) { this.locName = locName; }
     public void setPriority(Integer priority) { this.priority = priority; }
     public void setTabulatedFunction(Tabulated_function tabulatedFunction) {

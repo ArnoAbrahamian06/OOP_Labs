@@ -71,7 +71,8 @@ public class Tabulated_function {
     // Сеттеры
     public void setId(Long id) { this.id = id; }
     public void setSerializedData(String serializedData) { this.serializedData = serializedData; }
-    public void setUser(User user) { this.user = user; } // ДОБАВЬТЕ ЭТОТ СЕТТЕР
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUser(User user) { this.user = user; }
     public void setFunctionTypes(List<Function_type> functionTypes) { this.functionTypes = functionTypes; }
 
     // Исправьте методы добавления/удаления

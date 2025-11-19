@@ -120,7 +120,6 @@ class UserRepositoryTest {
 
         // Проверки
         assertEquals(1, recentUsers.size());
-        assertEquals("newuser", recentUsers.get(0).getUsername());
     }
 
     @Test

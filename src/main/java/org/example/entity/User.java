@@ -84,6 +84,7 @@ public class User {
     public void setRole(Role role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public List<Tabulated_function> getTabulated_functions() { return tabulatedFunctions; }
     public void setTabulated_functions(List<Tabulated_function> Tabulated_functions) { this.tabulatedFunctions = Tabulated_functions; }
