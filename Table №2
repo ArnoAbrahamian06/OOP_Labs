@@ -1,0 +1,6 @@
+| Запрос                                | Manual           |  Framework       |
+|---------------------------------------|------------------|------------------|
+| SELECT + Sort by Name (ASC)           | 445 мс           |  703 мс          |
+| SELECT + Sort by Email (ASC)          | 484 мс           |  694 мс          |
+| SELECT + Sort by Creation time (ASC)  | 589 мс           |  761 мс          |
+| SELECT + Sort by login (ASC)          | 420 мс           |  662 мс          |
