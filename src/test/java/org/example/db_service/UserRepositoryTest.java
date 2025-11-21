@@ -18,7 +18,7 @@ class UserRepositoryTest extends BaseTest {
         User insertedUser = userRepository.insert(user);
         User foundUser = userRepository.findById(insertedUser.getId());
 
-        assertNotNull(insertedUser.getId());
+        assertNotNull(insertedUser.getId() );
         assertNotNull(foundUser);
         assertEquals(insertedUser.getId(), foundUser.getId());
         assertEquals(user.getEmail(), foundUser.getEmail());

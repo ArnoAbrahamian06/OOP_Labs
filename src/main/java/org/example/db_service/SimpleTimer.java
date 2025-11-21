@@ -23,7 +23,7 @@ public class SimpleTimer {
         User user = new User("bibika22@gmail.com","yughkv","yhktgcv","admin");
         SimpleTimer.measureExecution(() -> {
             try {
-                userRepo.deleteById(10257L);
+                userRepo.findAll();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

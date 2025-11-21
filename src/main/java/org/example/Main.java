@@ -1,12 +1,19 @@
 package org.example;
 
-import org.example.functions.ArrayTabulatedFunction;
-import org.example.functions.MathFunction;
-import org.example.functions.SqrFunction;
+import org.example.db_service.User;
+import org.example.db_service.UserRepository;
+
+import java.sql.SQLException;
+
 
 public class Main {
-    public static void main(String[] args) {
-        MathFunction function = new SqrFunction();
-        System.out.println(function.apply(7));
+    public static void main(String[] args) throws SQLException {
+        User user = new User("example123@gmail.com", "sasun", "14532", "admin" );
+        User user1 = new User("example133@gmail.com", "saкun", "177532", "admin" );
+
+        UserRepository userRepository = new UserRepository();
+        userRepository.insert(user);
+        userRepository.insert(user1);
+
     }
 }
