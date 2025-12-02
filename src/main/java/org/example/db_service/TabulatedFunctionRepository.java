@@ -10,6 +10,26 @@ public class TabulatedFunctionRepository {
     private static final Logger logger = LoggerFactory.getLogger(TabulatedFunctionRepository.class);
 
     // ПОИСК
+    public TabulatedFunction findById(Long id) throws SQLException {
+        logger.debug("Поиск TabulatedFunction по ID: {}", id);
+        String sql = "SELECT * FROM tabulated_function WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                TabulatedFunction function = mapResultSetToTabulatedFunction(rs);
+                logger.debug("Найдена TabulatedFunction: {}", function);
+                return function;
+            }
+        }
+        logger.debug("TabulatedFunction с ID {} не найдена", id);
+        return null;
+    }
+
     public List<TabulatedFunction> findByUserId(Long userId) throws SQLException {
         logger.debug("Поиск TabulatedFunction по userId: {}", userId);
         List<TabulatedFunction> functions = new ArrayList<>();
@@ -26,6 +46,26 @@ public class TabulatedFunctionRepository {
             }
         }
         logger.debug("Найдено {} функций для пользователя {}", functions.size(), userId);
+        return functions;
+    }
+
+    public List<TabulatedFunction> findByUserIdAndFunctionTypeId(Long userId, Integer functionTypeId) throws SQLException {
+        logger.debug("Поиск TabulatedFunction по userId {} и functionTypeId {}", userId, functionTypeId);
+        List<TabulatedFunction> functions = new ArrayList<>();
+        String sql = "SELECT * FROM tabulated_function WHERE user_id = ? AND function_type_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, userId);
+            pstmt.setInt(2, functionTypeId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                functions.add(mapResultSetToTabulatedFunction(rs));
+            }
+        }
+        logger.debug("Найдено {} функций для userId {} и functionTypeId {}", functions.size(), userId, functionTypeId);
         return functions;
     }
 

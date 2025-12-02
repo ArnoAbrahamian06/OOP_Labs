@@ -1,0 +1,497 @@
+{
+  "info": {
+    "_postman_id": "a0de4f0b-834e-4a0c-86f0-134b3ed36ec3",
+    "name": "Function Storage API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Newman/Postman коллекция,   основные запросы Function Storage API."
+  },
+  "item": [
+    {
+      "name": "01 Create base function",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": {{ownerId}},\n  \"typeId\": {{functionTypeId}},\n  \"name\": \"auto_base\",\n  \"serializedData\": \"{{serializedFunction}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/functions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Function created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "var data = pm.response.json();",
+              "pm.environment.set(\"functionId\", data.id);",
+              "pm.environment.set(\"ownerId\", data.ownerId);",
+              "pm.environment.set(\"functionTypeId\", data.typeId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Create secondary function",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": {{ownerId}},\n  \"typeId\": {{functionTypeId}},\n  \"name\": \"auto_secondary\",\n  \"serializedData\": \"{{serializedFunctionSecondary}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/functions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Second function created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "var data = pm.response.json();",
+              "pm.environment.set(\"secondFunctionId\", data.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Get function by id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{functionId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{functionId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Function fetched\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.id).to.eql(parseInt(pm.environment.get(\"functionId\")));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Update function data",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serializedData\": \"{{serializedFunctionUpdated}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{functionId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{functionId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Function updated\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Get functions by owner",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/functions/owner/{{ownerId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "owner",
+            "{{ownerId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Owner functions fetched\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var data = pm.response.json();",
+              "    pm.expect(data.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Get functions by owner and type",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/functions/owner/{{ownerId}}/type/{{functionTypeId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "owner",
+            "{{ownerId}}",
+            "type",
+            "{{functionTypeId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Owner/type filter works\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Query functions by userId",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/functions?userId={{ownerId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{ownerId}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"userId query works\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Query functions with details",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/functions?withDetails=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions"
+          ],
+          "query": [
+            {
+              "key": "withDetails",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"withDetails query works\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Binary operation (ADD)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"secondFunctionId\": {{secondFunctionId}},\n  \"operation\": \"{{binaryOperation}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{functionId}}/operations/binary",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{functionId}}",
+            "operations",
+            "binary"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Binary operation completed\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var result = pm.response.json();",
+              "pm.environment.set(\"operationResultId\", result.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Derive function",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order\": {{derivativeOrder}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{functionId}}/derive",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{functionId}}",
+            "derive"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Derivative calculated\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var result = pm.response.json();",
+              "pm.environment.set(\"derivativeResultId\", result.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Delete operation result",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{operationResultId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{operationResultId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Operation result deleted\", function () {",
+              "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Delete derivative result",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{derivativeResultId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{derivativeResultId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Derivative result deleted\", function () {",
+              "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Delete secondary function",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{secondFunctionId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{secondFunctionId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Secondary function deleted\", function () {",
+              "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Delete base function",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/functions/{{functionId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "functions",
+            "{{functionId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Base function deleted\", function () {",
+              "    pm.expect([200, 204, 404]).to.include(pm.response.code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
+
