@@ -11,6 +11,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +41,82 @@ class TabulatedFunctionRepositoryTest {
         userRepository.save(testUser);
 
         testFunction = new Tabulated_function("serialized_data_here", testUser);
+    }
+
+    @Test
+    void testSetId() {
+        // Arrange
+        Tabulated_function function = new Tabulated_function();
+        // Act
+        function.setId(999L);
+        // Assert
+        assertEquals(999L, function.getId());
+    }
+
+    @Test
+    void testSetFunctionTypes() {
+        // Arrange
+        Tabulated_function function = new Tabulated_function();
+        Function_type type1 = new Function_type("type1", "Тип 1", 1, function);
+        Function_type type2 = new Function_type("type2", "Тип 2", 2, function);
+
+        List<Function_type> types = new ArrayList<>();
+        types.add(type1);
+        types.add(type2);
+
+        // Act
+        function.setFunctionTypes(types);
+
+        // Assert
+        assertEquals(2, function.getFunctionTypes().size());
+        assertTrue(function.getFunctionTypes().contains(type1));
+        assertTrue(function.getFunctionTypes().contains(type2));
+    }
+
+    @Test
+    void testRemoveFunctionType() {
+        // Arrange
+        Tabulated_function function = new Tabulated_function();
+        Function_type type1 = new Function_type("type1", "Тип 1", 1, function);
+        Function_type type2 = new Function_type("type2", "Тип 2", 2, function);
+
+        function.addFunctionType(type1);
+        function.addFunctionType(type2);
+
+        // Act
+        function.removeFunctionType(type1);
+
+        // Assert
+        assertEquals(1, function.getFunctionTypes().size());
+        assertFalse(function.getFunctionTypes().contains(type1));
+        assertTrue(function.getFunctionTypes().contains(type2));
+        assertNull(type1.getTabulatedFunction()); // Проверяем, что связь удалена
+    }
+
+    @Test
+    void testOnUpdateWorksViaReflection() throws Exception {
+        // Arrange
+        Tabulated_function function = new Tabulated_function("test_data", testUser);
+
+        // Сохраняем, чтобы установились начальные значения
+        function = tabulatedFunctionRepository.save(function);
+
+        // Получаем доступ к protected методу onUpdate
+        Method onUpdateMethod = Tabulated_function.class.getDeclaredMethod("onUpdate");
+        onUpdateMethod.setAccessible(true);
+
+        // Запоминаем текущее время
+        LocalDateTime initialTime = function.getUpdatedAt();
+
+        // Ждем немного
+        Thread.sleep(10);
+
+        // Act - вызываем onUpdate
+        onUpdateMethod.invoke(function);
+
+        // Assert
+        assertNotEquals(initialTime, function.getUpdatedAt());
+        assertTrue(function.getUpdatedAt().isAfter(initialTime));
     }
 
     @Test
@@ -75,6 +154,21 @@ class TabulatedFunctionRepositoryTest {
         // Проверки
         assertEquals(1, functions.size());
         assertEquals(savedFunction.getId(), functions.get(0).getId());
+    }
+
+    @Test
+    void testToString() {
+        // Arrange
+        Tabulated_function function = new Tabulated_function("test_data", testUser);
+        function.setId(123L);
+
+        // Act
+        String stringRepresentation = function.toString();
+
+        // Assert
+        assertNotNull(stringRepresentation);
+        assertTrue(stringRepresentation.contains("id=123"));
+        assertTrue(stringRepresentation.contains("serializedData='test_data"));
     }
 
     @Test

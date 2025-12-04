@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,6 +58,45 @@ class FunctionTypeRepositoryTest {
         assertEquals(1, savedType.getPriority());
         assertEquals(testFunction.getId(), savedType.getTabulatedFunction().getId());
     }
+
+    @Test
+    void testSetId() {
+        // Arrange
+        Function_type type = new Function_type();
+
+        // Act
+        type.setId(999L);
+
+        // Assert
+        assertEquals(999L, type.getId());
+    }
+
+    @Test
+    void testOnUpdateViaReflection() throws Exception {
+        // Arrange
+        Function_type type = new Function_type("test", "Тест", 1, testFunction);
+
+        // Сохраняем сущность
+        functionTypeRepository.save(type);
+
+        // Получаем protected метод onUpdate
+        Method onUpdateMethod = Function_type.class.getDeclaredMethod("onUpdate");
+        onUpdateMethod.setAccessible(true);
+
+        // Запоминаем текущее время
+        LocalDateTime beforeCall = type.getUpdatedAt();
+
+        // Ждем немного
+        Thread.sleep(10);
+
+        // Act - вызываем onUpdate через рефлексию
+        onUpdateMethod.invoke(type);
+
+        // Assert - проверяем, что updatedAt изменился
+        assertNotNull(type.getUpdatedAt());
+        assertNotEquals(beforeCall, type.getUpdatedAt());
+    }
+
 
     @Test
     void testFindByName() {

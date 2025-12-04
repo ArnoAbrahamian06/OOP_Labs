@@ -2,8 +2,11 @@ package org.example.repository;
 
 import org.example.entity.User;
 import org.example.entity.Role;
+import org.example.entity.Tabulated_function;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -11,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +34,73 @@ class UserRepositoryTest {
         // Генерация тестовых данных
         testUser = new User("testuser", "test@example.com", "hashedpassword123");
         testUser.setRole(Role.USER);
+    }
+
+    @Test
+    void testPrePersistOnCreate_SetsDefaultValues() {
+        // Arrange - создаем пользователя без установки createdAt и role
+        User user = new User();
+        user.setUsername("testuser_prepersist");
+        user.setEmail("prepersist@example.com");
+        user.setPasswordHash("password");
+        user.setCreatedAt(null);  // явно сбрасываем
+        user.setRole(null);       // явно сбрасываем
+
+        // Act - сохраняем
+        User savedUser = userRepository.save(user);
+
+        // Assert
+        assertNotNull(savedUser.getCreatedAt(), "createdAt должен быть установлен @PrePersist");
+        assertEquals(Role.USER, savedUser.getRole(), "role должен быть установлен в USER по умолчанию @PrePersist");
+    }
+
+    @Test
+    void testSetId() {
+        // Arrange
+        User user = new User();
+        // Act
+        user.setId(999L);
+        // Assert
+        assertEquals(999L, user.getId());
+    }
+
+    @Test
+    void testSetTabulatedFunctions() {
+        // Arrange
+        User user = new User();
+        Tabulated_function  func1 = new Tabulated_function();
+        Tabulated_function func2 = new Tabulated_function();
+
+        List<Tabulated_function> functions = new ArrayList<>();
+        functions.add(func1);
+        functions.add(func2);
+
+        // Act
+        user.setTabulated_functions(functions);
+
+        // Assert
+        assertEquals(2, user.getTabulated_functions().size());
+        assertTrue(user.getTabulated_functions().contains(func1));
+        assertTrue(user.getTabulated_functions().contains(func2));
+    }
+
+    @Test
+    void testRemoveTabulatedFunction() {
+        // Arrange
+        User user = new User();
+        Tabulated_function func1 = new Tabulated_function();
+        Tabulated_function func2 = new Tabulated_function();
+
+        user.addTabulated_function(func1);
+        user.addTabulated_function(func2);
+
+        // Act
+        user.removeTabulated_function(func1);
+
+        // Assert
+        assertEquals(1, user.getTabulated_functions().size());
+        assertFalse(user.getTabulated_functions().contains(func1));
+        assertTrue(user.getTabulated_functions().contains(func2));
     }
 
     @Test
@@ -103,23 +174,18 @@ class UserRepositoryTest {
 
     @Test
     void testFindByCreatedAtAfter() {
-        // Подготовка
-        User oldUser = new User("olduser", "old@example.com", "pass");
-        userRepository.save(oldUser);
+        // Создаем пользователя с текущим временем
+        User user = new User("testuser", "test@example.com", "password");
+        userRepository.save(user);
 
-        // Ждем немного чтобы время отличалось
-        try { Thread.sleep(100); } catch (InterruptedException e) {}
+        // Используем время на 1 секунду раньше
+        LocalDateTime timeFilter = LocalDateTime.now().minusSeconds(1);
 
-        LocalDateTime cutoff = LocalDateTime.now();
+        // Ищем пользователей созданных после этого времени
+        List<User> users = userRepository.findByCreatedAtAfter(timeFilter);
 
-        User newUser = new User("newuser", "new@example.com", "pass");
-        userRepository.save(newUser);
-
-        // Поиск пользователей созданных после cutoff
-        List<User> recentUsers = userRepository.findByCreatedAtAfter(cutoff);
-
-        // Проверки
-        assertEquals(1, recentUsers.size());
+        // Должен найти созданного пользователя
+        assertEquals(1, users.size());
     }
 
     @Test

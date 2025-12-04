@@ -73,9 +73,11 @@ class SearchControllerSortingTest {
         userRepository.save(user3);
 
         // Создание типов функций для тестирования сортировки
+        User savedUser = userRepository.findByUsername("zeta").orElseThrow();
+
         Tabulated_function func = new Tabulated_function();
         func.setSerializedData("test data");
-        func.setUser(user1);
+        func.setUser(savedUser);
         tabulatedFunctionRepository.save(func);
 
         Function_type type1 = new Function_type();
@@ -130,8 +132,8 @@ class SearchControllerSortingTest {
                         .param("sortBy", "createdAt"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].username").value("zeta")) // Самый старый
-                .andExpect(jsonPath("$[2].username").value("alpha")); // Самый новый
+                .andExpect(jsonPath("$[0].username").value("zeta"))
+                .andExpect(jsonPath("$[2].username").value("alpha"));
     }
 
     @Test
@@ -139,7 +141,7 @@ class SearchControllerSortingTest {
         mockMvc.perform(get("/api/search/users/sorted"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].username").value("alpha")) // Сортировка по username asc по умолчанию
+                .andExpect(jsonPath("$[0].username").value("alpha"))
                 .andExpect(jsonPath("$[1].username").value("beta"))
                 .andExpect(jsonPath("$[2].username").value("zeta"));
     }
@@ -163,9 +165,9 @@ class SearchControllerSortingTest {
                         .param("direction", "desc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].priority").value(15)) // beta_type
-                .andExpect(jsonPath("$[1].priority").value(10)) // gamma_function
-                .andExpect(jsonPath("$[2].priority").value(5)); // alpha_function
+                .andExpect(jsonPath("$[0].priority").value(15))
+                .andExpect(jsonPath("$[1].priority").value(10))
+                .andExpect(jsonPath("$[2].priority").value(5));
     }
 
     @Test
@@ -184,13 +186,13 @@ class SearchControllerSortingTest {
     @Test
     void testAdvancedSearch_WithNameFilterAndSorting() throws Exception {
         mockMvc.perform(get("/api/search/function-types/advanced")
-                        .param("name", "function") // Ищем подстроку, которая есть в alpha_function и gamma_function
+                        .param("name", "function")
                         .param("sortBy", "priority")
                         .param("direction", "desc"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2))) // alpha_function и gamma_function
-                .andExpect(jsonPath("$[0].name").value("gamma_function")) // Приоритет 10
-                .andExpect(jsonPath("$[1].name").value("alpha_function")); // Приоритет 5
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].name").value("gamma_function"))
+                .andExpect(jsonPath("$[1].name").value("alpha_function"));
     }
 
     @Test
@@ -235,8 +237,119 @@ class SearchControllerSortingTest {
                         .param("sortBy", "name")
                         .param("direction", "asc"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3))) // alpha_function и gamma_function
+                .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].name").value("alpha_function"))
                 .andExpect(jsonPath("$[2].name").value("gamma_function"));
+    }
+
+    @Test
+    void testFindSingleUser_Found() throws Exception {
+        mockMvc.perform(get("/api/search/users/single/{username}", "alpha"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("alpha"))
+                .andExpect(jsonPath("$.email").value("alpha@example.com"))
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test
+    void testFindSingleUser_NotFound() throws Exception {
+        mockMvc.perform(get("/api/search/users/single/{username}", "nonexistent"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testFindUsersByRole() throws Exception {
+        mockMvc.perform(get("/api/search/users/multiple/role/{role}", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].username").value("alpha"))
+                .andExpect(jsonPath("$[0].role").value("ADMIN"));
+
+        mockMvc.perform(get("/api/search/users/multiple/role/{role}", "USER"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].username").value("zeta"))
+                .andExpect(jsonPath("$[0].role").value("USER"));
+    }
+
+    @Test
+    void testFindUsersByRole_EmptyResult() throws Exception {
+        mockMvc.perform(get("/api/search/users/multiple/role/{role}", "GUEST"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void testDepthFirstSearch() throws Exception {
+        User zeta = userRepository.findByUsername("zeta").orElseThrow();
+
+        mockMvc.perform(get("/api/search/dfs/user/{userId}", zeta.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].username").value("zeta"));
+    }
+
+    @Test
+    void testDepthFirstSearch_UserNotFound() throws Exception {
+        mockMvc.perform(get("/api/search/dfs/user/{userId}", 999L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void testBreadthFirstSearch() throws Exception {
+        User zeta = userRepository.findByUsername("zeta").orElseThrow();
+
+        mockMvc.perform(get("/api/search/bfs/user/{userId}", zeta.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].username").value("zeta"));
+    }
+
+    @Test
+    void testBreadthFirstSearch_UserNotFound() throws Exception {
+        mockMvc.perform(get("/api/search/bfs/user/{userId}", 999L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void testSearchByHierarchy() throws Exception {
+        User zeta = userRepository.findByUsername("zeta").orElseThrow();
+
+        mockMvc.perform(get("/api/search/hierarchy/user/{userId}", zeta.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("zeta"))
+                .andExpect(jsonPath("$.user.email").value("zeta@example.com"));
+    }
+
+
+    @Test
+    void testFindFunctionsByType() throws Exception {
+        mockMvc.perform(get("/api/search/functions/by-type/{typeName}", "gamma_function"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].serializedData").value("test data"));
+    }
+
+    @Test
+    void testFindFunctionsByType_NotFound() throws Exception {
+        mockMvc.perform(get("/api/search/functions/by-type/{typeName}", "nonexistent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void testSearchByHierarchy_EmptyFunctions() throws Exception {
+        User emptyUser = new User();
+        emptyUser.setUsername("emptyuser");
+        emptyUser.setEmail("empty@example.com");
+        emptyUser.setPasswordHash("pass");
+        emptyUser.setRole(Role.USER);
+        userRepository.save(emptyUser);
+
+        mockMvc.perform(get("/api/search/hierarchy/user/{userId}", emptyUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("emptyuser"));
     }
 }
