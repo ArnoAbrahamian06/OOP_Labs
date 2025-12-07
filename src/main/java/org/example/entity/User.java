@@ -47,10 +47,10 @@ public class User {
     // Обязательные конструкторы
     public User() {}
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String passwordHash) {
         this.username = username;
         this.email = email;
-        this.passwordHash = password;
+        this.passwordHash = passwordHash;
         this.createdAt = LocalDateTime.now();
         this.role = Role.USER; // значение по умолчанию
     }
