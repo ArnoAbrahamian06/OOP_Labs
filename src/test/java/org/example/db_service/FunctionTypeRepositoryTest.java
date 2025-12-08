@@ -1,5 +1,7 @@
 package org.example.db_service;
 
+import org.example.DAO.PointRepository;
+import org.example.models.Point;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,16 +10,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FunctionTypeRepositoryTest extends BaseTest {
 
-    private final FunctionTypeRepository functionTypeRepository = new FunctionTypeRepository();
+    private final PointRepository functionTypeRepository = new PointRepository();
 
     @Test
     void testInsertAndFindById() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
+        Point type = TestDataGenerator.generateFunctionType();
 
         // When
-        FunctionType insertedType = functionTypeRepository.insert(type);
-        FunctionType foundType = functionTypeRepository.findById(insertedType.getId());
+        Point insertedType = functionTypeRepository.insert(type);
+        Point foundType = functionTypeRepository.findById(insertedType.getId());
 
         // Then
         assertNotNull(insertedType.getId());
@@ -33,11 +35,11 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testFindByName() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
 
         // When
-        FunctionType foundType = functionTypeRepository.findByName(type.getName());
+        Point foundType = functionTypeRepository.findByName(type.getName());
 
         // Then
         assertNotNull(foundType);
@@ -48,11 +50,11 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testFindByLocalizedName() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
 
         // When
-        FunctionType foundType = functionTypeRepository.findByLocalizedName(type.getLocalizedName());
+        Point foundType = functionTypeRepository.findByLocalizedName(type.getLocalizedName());
 
         // Then
         assertNotNull(foundType);
@@ -66,9 +68,9 @@ class FunctionTypeRepositoryTest extends BaseTest {
         int minPriority = 5;
 
         // Создаем типы с разным приоритетом
-        FunctionType highPriority1 = TestDataGenerator.generateFunctionTypeWithHighPriority();
-        FunctionType highPriority2 = TestDataGenerator.generateFunctionTypeWithHighPriority();
-        FunctionType lowPriority = TestDataGenerator.generateFunctionType();
+        Point highPriority1 = TestDataGenerator.generateFunctionTypeWithHighPriority();
+        Point highPriority2 = TestDataGenerator.generateFunctionTypeWithHighPriority();
+        Point lowPriority = TestDataGenerator.generateFunctionType();
         lowPriority.setPriority(2);
 
         functionTypeRepository.insert(highPriority1);
@@ -76,7 +78,7 @@ class FunctionTypeRepositoryTest extends BaseTest {
         functionTypeRepository.insert(lowPriority);
 
         // When
-        List<FunctionType> highPriorityTypes = functionTypeRepository.findByPriorityGreaterThan(minPriority);
+        List<Point> highPriorityTypes = functionTypeRepository.findByPriorityGreaterThan(minPriority);
 
         // Then
         assertTrue(highPriorityTypes.stream().allMatch(t -> t.getPriority() > minPriority));
@@ -85,13 +87,13 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testUpdatePriority() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
         int newPriority = type.getPriority() + 10;
 
         // When
         boolean updated = functionTypeRepository.updatePriority(insertedType.getId(), newPriority);
-        FunctionType updatedType = functionTypeRepository.findById(insertedType.getId());
+        Point updatedType = functionTypeRepository.findById(insertedType.getId());
 
         // Then
         assertTrue(updated);
@@ -102,13 +104,13 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testUpdateLocalizedName() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
         String newLocalizedName = "Новое локализованное имя";
 
         // When
         boolean updated = functionTypeRepository.updateLocalizedName(insertedType.getId(), newLocalizedName);
-        FunctionType updatedType = functionTypeRepository.findById(insertedType.getId());
+        Point updatedType = functionTypeRepository.findById(insertedType.getId());
 
         // Then
         assertTrue(updated);
@@ -119,8 +121,8 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testUpdateMultipleFields() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
 
         String newName = "updated_name";
         String newLocalizedName = "Обновленное имя";
@@ -129,7 +131,7 @@ class FunctionTypeRepositoryTest extends BaseTest {
         // When
         boolean updated = functionTypeRepository.updateFunctionType(
                 insertedType.getId(), newName, newLocalizedName, newPriority);
-        FunctionType updatedType = functionTypeRepository.findById(insertedType.getId());
+        Point updatedType = functionTypeRepository.findById(insertedType.getId());
 
         // Then
         assertTrue(updated);
@@ -142,12 +144,12 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testDeleteById() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
 
         // When
         boolean deleted = functionTypeRepository.deleteById(insertedType.getId());
-        FunctionType foundType = functionTypeRepository.findById(insertedType.getId());
+        Point foundType = functionTypeRepository.findById(insertedType.getId());
 
         // Then
         assertTrue(deleted);
@@ -157,12 +159,12 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testDeleteByName() throws Exception {
         // Given
-        FunctionType type = TestDataGenerator.generateFunctionType();
-        FunctionType insertedType = functionTypeRepository.insert(type);
+        Point type = TestDataGenerator.generateFunctionType();
+        Point insertedType = functionTypeRepository.insert(type);
 
         // When
         boolean deleted = functionTypeRepository.deleteByName(type.getName());
-        FunctionType foundType = functionTypeRepository.findByName(type.getName());
+        Point foundType = functionTypeRepository.findByName(type.getName());
 
         // Then
         assertTrue(deleted);
@@ -172,17 +174,17 @@ class FunctionTypeRepositoryTest extends BaseTest {
     @Test
     void testUniqueConstraints() throws Exception {
         // Given
-        FunctionType type1 = TestDataGenerator.generateFunctionType();
+        Point type1 = TestDataGenerator.generateFunctionType();
         functionTypeRepository.insert(type1);
 
         // When & Then - попытка создать тип с тем же именем
-        FunctionType type2 = TestDataGenerator.generateFunctionType();
+        Point type2 = TestDataGenerator.generateFunctionType();
         type2.setName(type1.getName());
 
         assertThrows(Exception.class, () -> functionTypeRepository.insert(type2));
 
         // When & Then - попытка создать тип с тем же локализованным именем
-        FunctionType type3 = TestDataGenerator.generateFunctionType();
+        Point type3 = TestDataGenerator.generateFunctionType();
         type3.setLocalizedName(type1.getLocalizedName());
 
         assertThrows(Exception.class, () -> functionTypeRepository.insert(type3));

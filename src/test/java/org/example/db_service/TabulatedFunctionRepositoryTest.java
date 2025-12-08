@@ -1,5 +1,10 @@
 package org.example.db_service;
 
+import org.example.DAO.PointRepository;
+import org.example.DAO.FunctionRepository;
+import org.example.DAO.UserRepository;
+import org.example.models.Point;
+import org.example.models.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TabulatedFunctionRepositoryTest extends BaseTest {
 
-    private final TabulatedFunctionRepository functionRepository = new TabulatedFunctionRepository();
+    private final FunctionRepository functionRepository = new FunctionRepository();
     private final UserRepository userRepository = new UserRepository();
-    private final FunctionTypeRepository typeRepository = new FunctionTypeRepository();
+    private final PointRepository typeRepository = new PointRepository();
 
     private User testUser;
-    private FunctionType testType;
+    private Point testType;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -29,11 +34,11 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testInsertAndFindById() throws Exception {
         // Given
-        TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
 
         // When
-        TabulatedFunction insertedFunction = functionRepository.insert(function);
-        TabulatedFunction foundFunction = functionRepository.findByUserId(testUser.getId()).get(0);
+        Function insertedFunction = functionRepository.insert(function);
+        Function foundFunction = functionRepository.findByUserId(testUser.getId()).get(0);
 
         // Then
         assertNotNull(insertedFunction.getId());
@@ -51,19 +56,19 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
         // Given
         int functionCount = 3;
         for (int i = 0; i < functionCount; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
         // Создаем функции для другого пользователя
         User anotherUser = userRepository.insert(TestDataGenerator.generateUser());
         for (int i = 0; i < 2; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(anotherUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(anotherUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
         // When
-        List<TabulatedFunction> userFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> userFunctions = functionRepository.findByUserId(testUser.getId());
 
         // Then
         assertEquals(functionCount, userFunctions.size());
@@ -73,23 +78,23 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testFindByFunctionTypeId() throws Exception {
         // Given
-        FunctionType anotherType = typeRepository.insert(TestDataGenerator.generateFunctionType());
+        Point anotherType = typeRepository.insert(TestDataGenerator.generateFunctionType());
 
         int type1Count = 3;
         int type2Count = 2;
 
         for (int i = 0; i < type1Count; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
         for (int i = 0; i < type2Count; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), anotherType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), anotherType.getId());
             functionRepository.insert(function);
         }
 
         // When
-        List<TabulatedFunction> type1Functions = functionRepository.findByFunctionTypeId(testType.getId());
+        List<Function> type1Functions = functionRepository.findByFunctionTypeId(testType.getId());
 
         // Then
         assertEquals(type1Count, type1Functions.size());
@@ -99,7 +104,7 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testFindByCreatedTimeAfter() throws Exception {
         // Given
-        TabulatedFunction function1 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function function1 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
         functionRepository.insert(function1);
 
         // Ждем немного, чтобы время изменилось
@@ -109,11 +114,11 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
 
         Thread.sleep(100);
 
-        TabulatedFunction function2 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function function2 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
         functionRepository.insert(function2);
 
         // When
-        List<TabulatedFunction> recentFunctions = functionRepository.findByCreatedTimeAfter(cutoffTime);
+        List<Function> recentFunctions = functionRepository.findByCreatedTimeAfter(cutoffTime);
 
         // Then
         assertFalse(recentFunctions.isEmpty());
@@ -125,21 +130,21 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
         // Given
         int totalFunctions = 8;
         for (int i = 0; i < totalFunctions; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
         // When
-        List<TabulatedFunction> firstPage = functionRepository.findWithPagination(5, 0);
-        List<TabulatedFunction> secondPage = functionRepository.findWithPagination(5, 5);
+        List<Function> firstPage = functionRepository.findWithPagination(5, 0);
+        List<Function> secondPage = functionRepository.findWithPagination(5, 5);
 
         // Then
         assertEquals(5, firstPage.size());
         assertEquals(3, secondPage.size()); // Осталось только 3 функции
 
         // Проверяем, что страницы не пересекаются
-        List<Long> firstPageIds = firstPage.stream().map(TabulatedFunction::getId).toList();
-        List<Long> secondPageIds = secondPage.stream().map(TabulatedFunction::getId).toList();
+        List<Long> firstPageIds = firstPage.stream().map(Function::getId).toList();
+        List<Long> secondPageIds = secondPage.stream().map(Function::getId).toList();
 
         assertTrue(firstPageIds.stream().noneMatch(secondPageIds::contains));
     }
@@ -147,22 +152,22 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testFindWithUserAndTypeInfo() throws Exception {
         // Given
-        TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
         functionRepository.insert(function);
 
         // When
-        List<TabulatedFunction> functionsWithInfo = functionRepository.findWithUserAndTypeInfo();
+        List<Function> functionsWithInfo = functionRepository.findWithUserAndTypeInfo();
 
         // Then
         assertFalse(functionsWithInfo.isEmpty());
 
-        TabulatedFunction functionWithInfo = functionsWithInfo.get(0);
-        assertNotNull(functionWithInfo.getUserLogin());
+        Function functionWithInfo = functionsWithInfo.get(0);
+        assertNotNull(functionWithInfo.getUserUsername());
         assertNotNull(functionWithInfo.getUserEmail());
         assertNotNull(functionWithInfo.getFunctionTypeName());
         assertNotNull(functionWithInfo.getFunctionTypeLocalized());
 
-        assertEquals(testUser.getLogin(), functionWithInfo.getUserLogin());
+        assertEquals(testUser.getUsername(), functionWithInfo.getUserUsername());
         assertEquals(testUser.getEmail(), functionWithInfo.getUserEmail());
         assertEquals(testType.getName(), functionWithInfo.getFunctionTypeName());
         assertEquals(testType.getLocalizedName(), functionWithInfo.getFunctionTypeLocalized());
@@ -171,40 +176,40 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testUpdateSerializedData() throws Exception {
         // Given
-        TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
-        TabulatedFunction insertedFunction = functionRepository.insert(function);
+        Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function insertedFunction = functionRepository.insert(function);
 
         byte[] newData = "новые данные".getBytes();
 
         // When
         boolean updated = functionRepository.updateSerializedData(insertedFunction.getId(), newData);
-        List<TabulatedFunction> updatedFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> updatedFunctions = functionRepository.findByUserId(testUser.getId());
 
         // Then
         assertTrue(updated);
         assertFalse(updatedFunctions.isEmpty());
 
-        TabulatedFunction updatedFunction = updatedFunctions.get(0);
+        Function updatedFunction = updatedFunctions.get(0);
         assertArrayEquals(newData, updatedFunction.getSerializedData());
     }
 
     @Test
     void testUpdateFunctionType() throws Exception {
         // Given
-        TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
-        TabulatedFunction insertedFunction = functionRepository.insert(function);
+        Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function insertedFunction = functionRepository.insert(function);
 
-        FunctionType newType = typeRepository.insert(TestDataGenerator.generateFunctionType());
+        Point newType = typeRepository.insert(TestDataGenerator.generateFunctionType());
 
         // When
         boolean updated = functionRepository.updateFunctionType(insertedFunction.getId(), newType.getId());
-        List<TabulatedFunction> updatedFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> updatedFunctions = functionRepository.findByUserId(testUser.getId());
 
         // Then
         assertTrue(updated);
         assertFalse(updatedFunctions.isEmpty());
 
-        TabulatedFunction updatedFunction = updatedFunctions.get(0);
+        Function updatedFunction = updatedFunctions.get(0);
         assertEquals(newType.getId(), updatedFunction.getFunctionTypeId());
     }
 
@@ -213,7 +218,7 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
         // Given
         int functionCount = 3;
         for (int i = 0; i < functionCount; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
@@ -222,7 +227,7 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
 
         // When
         boolean updated = functionRepository.updateUserFunctions(testUser.getId());
-        List<TabulatedFunction> userFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> userFunctions = functionRepository.findByUserId(testUser.getId());
 
         // Then
         assertTrue(updated);
@@ -235,12 +240,12 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testDeleteById() throws Exception {
         // Given
-        TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
-        TabulatedFunction insertedFunction = functionRepository.insert(function);
+        Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+        Function insertedFunction = functionRepository.insert(function);
 
         // When
         boolean deleted = functionRepository.deleteById(insertedFunction.getId());
-        List<TabulatedFunction> remainingFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> remainingFunctions = functionRepository.findByUserId(testUser.getId());
 
         // Then
         assertTrue(deleted);
@@ -252,19 +257,19 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
         // Given
         int functionCount = 3;
         for (int i = 0; i < functionCount; i++) {
-            TabulatedFunction function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
             functionRepository.insert(function);
         }
 
         // Создаем функции для другого пользователя
         User anotherUser = userRepository.insert(TestDataGenerator.generateUser());
-        TabulatedFunction otherFunction = TestDataGenerator.generateTabulatedFunction(anotherUser.getId(), testType.getId());
+        Function otherFunction = TestDataGenerator.generateTabulatedFunction(anotherUser.getId(), testType.getId());
         functionRepository.insert(otherFunction);
 
         // When
         boolean deleted = functionRepository.deleteByUserId(testUser.getId());
-        List<TabulatedFunction> testUserFunctions = functionRepository.findByUserId(testUser.getId());
-        List<TabulatedFunction> anotherUserFunctions = functionRepository.findByUserId(anotherUser.getId());
+        List<Function> testUserFunctions = functionRepository.findByUserId(testUser.getId());
+        List<Function> anotherUserFunctions = functionRepository.findByUserId(anotherUser.getId());
 
         // Then
         assertTrue(deleted);
@@ -275,20 +280,20 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
     @Test
     void testDeleteByFunctionTypeId() throws Exception {
         // Given
-        FunctionType anotherType = typeRepository.insert(TestDataGenerator.generateFunctionType());
+        Point anotherType = typeRepository.insert(TestDataGenerator.generateFunctionType());
 
         // Создаем функции разных типов
         for (int i = 0; i < 2; i++) {
-            TabulatedFunction function1 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
-            TabulatedFunction function2 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), anotherType.getId());
+            Function function1 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), testType.getId());
+            Function function2 = TestDataGenerator.generateTabulatedFunction(testUser.getId(), anotherType.getId());
             functionRepository.insert(function1);
             functionRepository.insert(function2);
         }
 
         // When
         boolean deleted = functionRepository.deleteByFunctionTypeId(testType.getId());
-        List<TabulatedFunction> type1Functions = functionRepository.findByFunctionTypeId(testType.getId());
-        List<TabulatedFunction> type2Functions = functionRepository.findByFunctionTypeId(anotherType.getId());
+        List<Function> type1Functions = functionRepository.findByFunctionTypeId(testType.getId());
+        List<Function> type2Functions = functionRepository.findByFunctionTypeId(anotherType.getId());
 
         // Then
         assertTrue(deleted);
@@ -302,8 +307,8 @@ class TabulatedFunctionRepositoryTest extends BaseTest {
         Long nonExistentUserId = 999999L;
         Integer nonExistentTypeId = 999999;
 
-        TabulatedFunction functionWithBadUser = TestDataGenerator.generateTabulatedFunction(nonExistentUserId, testType.getId());
-        TabulatedFunction functionWithBadType = TestDataGenerator.generateTabulatedFunction(testUser.getId(), nonExistentTypeId);
+        Function functionWithBadUser = TestDataGenerator.generateTabulatedFunction(nonExistentUserId, testType.getId());
+        Function functionWithBadType = TestDataGenerator.generateTabulatedFunction(testUser.getId(), nonExistentTypeId);
 
         // When & Then - должны получить ошибку из-за foreign key constraint
         assertThrows(Exception.class, () -> functionRepository.insert(functionWithBadUser));

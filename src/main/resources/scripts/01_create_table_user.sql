@@ -1,9 +1,8 @@
--- Создание таблицы User
-CREATE TABLE IF NOT EXISTS "user" (
-    id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    login VARCHAR(50) NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    created_time TIMESTAMPTZ DEFAULT NOW(),
-    role VARCHAR(50) DEFAULT 'user'
+CREATE TABLE users
+(
+    id            SERIAL PRIMARY KEY,
+    username      VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
+    role          VARCHAR(255) DEFAULT 'USER',
+    created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );

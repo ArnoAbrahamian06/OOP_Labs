@@ -1,5 +1,6 @@
 package org.example.db_service;
 
+import org.example.DAO.UserRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -22,7 +23,7 @@ class UserRepositoryTest extends BaseTest {
         assertNotNull(foundUser);
         assertEquals(insertedUser.getId(), foundUser.getId());
         assertEquals(user.getEmail(), foundUser.getEmail());
-        assertEquals(user.getLogin(), foundUser.getLogin());
+        assertEquals(user.getUsername(), foundUser.getUsername());
         assertEquals(user.getRole(), foundUser.getRole());
         assertNotNull(foundUser.getCreatedTime());
     }
@@ -40,15 +41,15 @@ class UserRepositoryTest extends BaseTest {
     }
 
     @Test
-    void testFindByLogin() throws Exception {
+    void testFindByUsername() throws Exception {
         User user = TestDataGenerator.generateUser();
         User insertedUser = userRepository.insert(user);
 
-        User foundUser = userRepository.findByLogin(user.getLogin());
+        User foundUser = userRepository.findByUsername(user.getUsername());
 
         assertNotNull(foundUser);
         assertEquals(insertedUser.getId(), foundUser.getId());
-        assertEquals(user.getLogin(), foundUser.getLogin());
+        assertEquals(user.getUsername(), foundUser.getUsername());
     }
 
     @Test
@@ -112,7 +113,7 @@ class UserRepositoryTest extends BaseTest {
         assertTrue(updated);
         assertNotNull(updatedUser);
         assertEquals(newEmail, updatedUser.getEmail());
-        assertEquals(user.getLogin(), updatedUser.getLogin()); // Логин не должен измениться
+        assertEquals(user.getUsername(), updatedUser.getUsername()); // Логин не должен измениться
     }
 
     @Test
@@ -148,15 +149,15 @@ class UserRepositoryTest extends BaseTest {
         User user = TestDataGenerator.generateUser();
         User insertedUser = userRepository.insert(user);
         String newEmail = "multi_update@example.com";
-        String newLogin = "multi_update_login";
+        String newUsername = "multi_update_username";
 
-        boolean updated = userRepository.updateUser(insertedUser.getId(), newEmail, newLogin);
+        boolean updated = userRepository.updateUser(insertedUser.getId(), newEmail, newUsername);
         User updatedUser = userRepository.findById(insertedUser.getId());
 
         assertTrue(updated);
         assertNotNull(updatedUser);
         assertEquals(newEmail, updatedUser.getEmail());
-        assertEquals(newLogin, updatedUser.getLogin());
+        assertEquals(newUsername, updatedUser.getUsername());
     }
 
     @Test
@@ -196,7 +197,7 @@ class UserRepositoryTest extends BaseTest {
 
         // Попытка создать пользователя с тем же логином
         User user3 = TestDataGenerator.generateUser();
-        user3.setLogin(user1.getLogin()); // Дублирующий логин
+        user3.setUsername(user1.getUsername()); // Дублирующий логин
 
         assertThrows(Exception.class, () -> userRepository.insert(user3));
     }

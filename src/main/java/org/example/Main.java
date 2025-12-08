@@ -1,7 +1,7 @@
 package org.example;
 
 import org.example.db_service.User;
-import org.example.db_service.UserRepository;
+import org.example.DAO.UserRepository;
 
 import java.sql.SQLException;
 

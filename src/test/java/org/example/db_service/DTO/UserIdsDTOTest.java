@@ -1,9 +1,10 @@
 // DTOTransformerTest.java
 package org.example.db_service.DTO;
 
+import org.example.DTO.UserDTO;
 import org.example.db_service.User;
-import org.example.db_service.FunctionType;
-import org.example.db_service.TabulatedFunction;
+import org.example.models.Point;
+import org.example.models.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -13,11 +14,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DTOTransformerTest {
+class UserIdsDTOTest {
 
     private User testUser;
-    private FunctionType testFunctionType;
-    private TabulatedFunction testTabulatedFunction;
+    private Point testFunctionType;
+    private Function testTabulatedFunction;
 
     @BeforeEach
     void setUp() {
@@ -25,12 +26,12 @@ class DTOTransformerTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail("test@example.com");
-        testUser.setLogin("testuser");
+        testUser.setUsername("testuser");
         testUser.setPasswordHash("hashedpassword");
         testUser.setCreatedTime(LocalDateTime.now());
         testUser.setRole("USER");
 
-        testFunctionType = new FunctionType();
+        testFunctionType = new Point();
         testFunctionType.setId(1);
         testFunctionType.setName("linear");
         testFunctionType.setLocalizedName("Линейная");
@@ -38,14 +39,14 @@ class DTOTransformerTest {
         testFunctionType.setCreatedTime(LocalDateTime.now());
         testFunctionType.setUpdatedTime(LocalDateTime.now());
 
-        testTabulatedFunction = new TabulatedFunction();
+        testTabulatedFunction = new Function();
         testTabulatedFunction.setId(1L);
         testTabulatedFunction.setUserId(1L);
         testTabulatedFunction.setFunctionTypeId(1);
         testTabulatedFunction.setSerializedData(new byte[]{1, 2, 3, 4, 5});
         testTabulatedFunction.setCreatedTime(LocalDateTime.now());
         testTabulatedFunction.setUpdatedTime(LocalDateTime.now());
-        testTabulatedFunction.setUserLogin("testuser");
+        testTabulatedFunction.setUserUsername("testuser");
         testTabulatedFunction.setUserEmail("test@example.com");
         testTabulatedFunction.setFunctionTypeName("linear");
         testTabulatedFunction.setFunctionTypeLocalized("Линейная");
@@ -54,13 +55,13 @@ class DTOTransformerTest {
     @Test
     void testUserToUserDTO() {
         // When
-        UserDTO result = DTOTransformer.toUserDTO(testUser);
+        UserDTO result = UserIdsDTO.toUserDTO(testUser);
 
         // Then
         assertNotNull(result);
         assertEquals(testUser.getId(), result.getId());
         assertEquals(testUser.getEmail(), result.getEmail());
-        assertEquals(testUser.getLogin(), result.getLogin());
+        assertEquals(testUser.getUsername(), result.getUsername());
         assertEquals(testUser.getPasswordHash(), result.getPasswordHash());
         assertEquals(testUser.getCreatedTime(), result.getCreatedTime());
         assertEquals(testUser.getRole(), result.getRole());
@@ -69,16 +70,16 @@ class DTOTransformerTest {
     @Test
     void testUserDTOToUser() {
         // Given
-        UserDTO userDTO = DTOTransformer.toUserDTO(testUser);
+        UserDTO userDTO = UserIdsDTO.toUserDTO(testUser);
 
         // When
-        User result = DTOTransformer.toUser(userDTO);
+        User result = UserIdsDTO.toUser(userDTO);
 
         // Then
         assertNotNull(result);
         assertEquals(userDTO.getId(), result.getId());
         assertEquals(userDTO.getEmail(), result.getEmail());
-        assertEquals(userDTO.getLogin(), result.getLogin());
+        assertEquals(userDTO.getUsername(), result.getUsername());
         assertEquals(userDTO.getPasswordHash(), result.getPasswordHash());
         assertEquals(userDTO.getCreatedTime(), result.getCreatedTime());
         assertEquals(userDTO.getRole(), result.getRole());
@@ -87,7 +88,7 @@ class DTOTransformerTest {
     @Test
     void testFunctionTypeToFunctionTypeDTO() {
         // When
-        FunctionTypeDTO result = DTOTransformer.toFunctionTypeDTO(testFunctionType);
+        FunctionTypeDTO result = UserIdsDTO.toFunctionTypeDTO(testFunctionType);
 
         // Then
         assertNotNull(result);
@@ -102,10 +103,10 @@ class DTOTransformerTest {
     @Test
     void testFunctionTypeDTOToFunctionType() {
         // Given
-        FunctionTypeDTO functionTypeDTO = DTOTransformer.toFunctionTypeDTO(testFunctionType);
+        FunctionTypeDTO functionTypeDTO = UserIdsDTO.toFunctionTypeDTO(testFunctionType);
 
         // When
-        FunctionType result = DTOTransformer.toFunctionType(functionTypeDTO);
+        Point result = UserIdsDTO.toFunctionType(functionTypeDTO);
 
         // Then
         assertNotNull(result);
@@ -120,7 +121,7 @@ class DTOTransformerTest {
     @Test
     void testTabulatedFunctionToTabulatedFunctionDTO() {
         // When
-        TabulatedFunctionDTO result = DTOTransformer.toTabulatedFunctionDTO(testTabulatedFunction);
+        TabulatedFunctionDTO result = UserIdsDTO.toTabulatedFunctionDTO(testTabulatedFunction);
 
         // Then
         assertNotNull(result);
@@ -130,7 +131,7 @@ class DTOTransformerTest {
         assertArrayEquals(testTabulatedFunction.getSerializedData(), result.getSerializedData());
         assertEquals(testTabulatedFunction.getCreatedTime(), result.getCreatedTime());
         assertEquals(testTabulatedFunction.getUpdatedTime(), result.getUpdatedTime());
-        assertEquals(testTabulatedFunction.getUserLogin(), result.getUserLogin());
+        assertEquals(testTabulatedFunction.getUserUsername(), result.getUserUsername());
         assertEquals(testTabulatedFunction.getUserEmail(), result.getUserEmail());
         assertEquals(testTabulatedFunction.getFunctionTypeName(), result.getFunctionTypeName());
         assertEquals(testTabulatedFunction.getFunctionTypeLocalized(), result.getFunctionTypeLocalized());
@@ -139,10 +140,10 @@ class DTOTransformerTest {
     @Test
     void testTabulatedFunctionDTOToTabulatedFunction() {
         // Given
-        TabulatedFunctionDTO functionDTO = DTOTransformer.toTabulatedFunctionDTO(testTabulatedFunction);
+        TabulatedFunctionDTO functionDTO = UserIdsDTO.toTabulatedFunctionDTO(testTabulatedFunction);
 
         // When
-        TabulatedFunction result = DTOTransformer.toTabulatedFunction(functionDTO);
+        Function result = UserIdsDTO.toTabulatedFunction(functionDTO);
 
         // Then
         assertNotNull(result);
@@ -152,7 +153,7 @@ class DTOTransformerTest {
         assertArrayEquals(functionDTO.getSerializedData(), result.getSerializedData());
         assertEquals(functionDTO.getCreatedTime(), result.getCreatedTime());
         assertEquals(functionDTO.getUpdatedTime(), result.getUpdatedTime());
-        assertEquals(functionDTO.getUserLogin(), result.getUserLogin());
+        assertEquals(functionDTO.getUserUsername(), result.getUserUsername());
         assertEquals(functionDTO.getUserEmail(), result.getUserEmail());
         assertEquals(functionDTO.getFunctionTypeName(), result.getFunctionTypeName());
         assertEquals(functionDTO.getFunctionTypeLocalized(), result.getFunctionTypeLocalized());
@@ -164,7 +165,7 @@ class DTOTransformerTest {
         List<User> users = Arrays.asList(testUser, testUser);
 
         // When
-        List<UserDTO> result = DTOTransformer.toUserDTOList(users);
+        List<UserDTO> result = UserIdsDTO.toUserDTOList(users);
 
         // Then
         assertNotNull(result);
@@ -176,10 +177,10 @@ class DTOTransformerTest {
     @Test
     void testFunctionTypeListTransformation() {
         // Given
-        List<FunctionType> functionTypes = Arrays.asList(testFunctionType, testFunctionType);
+        List<Point> functionTypes = Arrays.asList(testFunctionType, testFunctionType);
 
         // When
-        List<FunctionTypeDTO> result = DTOTransformer.toFunctionTypeDTOList(functionTypes);
+        List<FunctionTypeDTO> result = UserIdsDTO.toFunctionTypeDTOList(functionTypes);
 
         // Then
         assertNotNull(result);
@@ -191,10 +192,10 @@ class DTOTransformerTest {
     @Test
     void testTabulatedFunctionListTransformation() {
         // Given
-        List<TabulatedFunction> functions = Arrays.asList(testTabulatedFunction, testTabulatedFunction);
+        List<Function> functions = Arrays.asList(testTabulatedFunction, testTabulatedFunction);
 
         // When
-        List<TabulatedFunctionDTO> result = DTOTransformer.toTabulatedFunctionDTOList(functions);
+        List<TabulatedFunctionDTO> result = UserIdsDTO.toTabulatedFunctionDTOList(functions);
 
         // Then
         assertNotNull(result);
@@ -206,7 +207,7 @@ class DTOTransformerTest {
     @Test
     void testNullUserTransformation() {
         // When
-        UserDTO result = DTOTransformer.toUserDTO(null);
+        UserDTO result = UserIdsDTO.toUserDTO(null);
 
         // Then
         assertNull(result);
@@ -215,7 +216,7 @@ class DTOTransformerTest {
     @Test
     void testNullFunctionTypeTransformation() {
         // When
-        FunctionTypeDTO result = DTOTransformer.toFunctionTypeDTO(null);
+        FunctionTypeDTO result = UserIdsDTO.toFunctionTypeDTO(null);
 
         // Then
         assertNull(result);
@@ -224,7 +225,7 @@ class DTOTransformerTest {
     @Test
     void testNullTabulatedFunctionTransformation() {
         // When
-        TabulatedFunctionDTO result = DTOTransformer.toTabulatedFunctionDTO(null);
+        TabulatedFunctionDTO result = UserIdsDTO.toTabulatedFunctionDTO(null);
 
         // Then
         assertNull(result);

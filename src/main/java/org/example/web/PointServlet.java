@@ -2,8 +2,8 @@ package org.example.web;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.DAO.UserDAO;
-import org.example.models.User;
+import org.example.DAO.PointDAO;
+import org.example.models.Point;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -12,10 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/api/users/*")
-public class UserServlet extends HttpServlet {
+@WebServlet("/api/points/*")
+public class PointServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final PointDAO pointDAO = new PointDAO();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -24,16 +24,16 @@ public class UserServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
-            // GET /api/users — все пользователи
-            List<User> users = userDAO.findAll();
-            resp.getWriter().write(objectMapper.writeValueAsString(users));
+            // GET /api/points — все точки
+            List<Point> points = pointDAO.findAll();
+            resp.getWriter().write(objectMapper.writeValueAsString(points));
         } else {
-            // GET /api/users/{id}
+            // GET /api/points/{id}
             try {
                 int id = Integer.parseInt(pathInfo.substring(1));
-                var user = userDAO.findById(id);
-                if (user.isPresent()) {
-                    resp.getWriter().write(objectMapper.writeValueAsString(user.get()));
+                var pointOpt = pointDAO.findById(id);
+                if (pointOpt.isPresent()) {
+                    resp.getWriter().write(objectMapper.writeValueAsString(pointOpt.get()));
                 } else {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -45,9 +45,9 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        User user = objectMapper.readValue(req.getInputStream(), User.class);
-        User saved = userDAO.insert(user);
-        if (saved != null) {
+        Point point = objectMapper.readValue(req.getInputStream(), Point.class);
+        Point saved = pointDAO.insert(point);
+        if (saved != null && saved.getId() != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.getWriter().write(objectMapper.writeValueAsString(saved));
         } else {
@@ -64,9 +64,9 @@ public class UserServlet extends HttpServlet {
         }
         try {
             int id = Integer.parseInt(pathInfo.substring(1));
-            User user = objectMapper.readValue(req.getInputStream(), User.class);
-            user.setId(id);
-            if (userDAO.update(user)) {
+            Point point = objectMapper.readValue(req.getInputStream(), Point.class);
+            point.setId(id);
+            if (pointDAO.update(point)) {
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -85,7 +85,7 @@ public class UserServlet extends HttpServlet {
         }
         try {
             int id = Integer.parseInt(pathInfo.substring(1));
-            if (userDAO.delete(id)) {
+            if (pointDAO.delete(id)) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);

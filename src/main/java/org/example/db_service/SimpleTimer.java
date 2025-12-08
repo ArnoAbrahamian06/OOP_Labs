@@ -1,5 +1,7 @@
 package org.example.db_service;
 
+import org.example.DAO.UserRepository;
+
 import java.sql.SQLException;
 
 public class SimpleTimer {

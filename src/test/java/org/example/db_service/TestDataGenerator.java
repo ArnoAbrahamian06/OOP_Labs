@@ -1,11 +1,10 @@
 package org.example.db_service;
 
 import org.example.db_service.User;
-import org.example.db_service.FunctionType;
-import org.example.db_service.TabulatedFunction;
+import org.example.models.Point;
+import org.example.models.Function;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -20,11 +19,11 @@ public class TestDataGenerator {
     public static User generateUser() {
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String email = "user" + uuid + "@" + DOMAINS[random.nextInt(DOMAINS.length)];
-        String login = "user_" + uuid;
+        String username = "user_" + uuid;
         String passwordHash = "hash_" + UUID.randomUUID().toString();
         String role = ROLES[random.nextInt(ROLES.length)];
 
-        return new User(email, login, passwordHash, role);
+        return new User(email, username, passwordHash, role);
     }
 
     public static User generateUserWithSpecificRole(String role) {
@@ -34,25 +33,26 @@ public class TestDataGenerator {
     }
 
     // Генерация типов функций
-    public static FunctionType generateFunctionType() {
+    public static Point generateFunctionType() {
         int index = random.nextInt(FUNCTION_NAMES.length);
         String name = FUNCTION_NAMES[index] + "_" + UUID.randomUUID().toString().substring(0, 6);
         String localizedName = LOCALIZED_NAMES[index] + "_" + UUID.randomUUID().toString().substring(0, 6);
         int priority = random.nextInt(10);
 
-        return new FunctionType(name, localizedName, priority);
+        return new Point(name, localizedName, priority);
     }
 
-    public static FunctionType generateFunctionTypeWithHighPriority() {
-        FunctionType type = generateFunctionType();
+    public static Point generateFunctionTypeWithHighPriority() {
+        Point type = generateFunctionType();
         type.setPriority(5 + random.nextInt(10)); // Приоритет от 5 до 15
         return type;
     }
 
     // Генерация табличных функций
-    public static TabulatedFunction generateTabulatedFunction(Long userId, Integer functionTypeId) {
+    public static Function generateTabulatedFunction(Long userId, Integer functionTypeId) {
         byte[] data = generateRandomData(50 + random.nextInt(200)); // Данные размером 50-250 байт
-        return new TabulatedFunction(userId, functionTypeId, data);
+        String name = generateRandomString(5 + random.nextInt(50));
+        return new Function(userId, functionTypeId, data, name);
     }
 
     private static byte[] generateRandomData(int size) {

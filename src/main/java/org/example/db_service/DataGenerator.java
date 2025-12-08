@@ -1,7 +1,12 @@
 package org.example.db_service;
 
+import org.example.DAO.PointRepository;
+import org.example.DAO.FunctionRepository;
+import org.example.DAO.UserRepository;
+import org.example.models.Point;
+import org.example.models.Function;
+
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -12,13 +17,13 @@ public class DataGenerator {
     private static final String[] FUNCTION_LOCALIZED_NAMES = {"Линейная", "Квадратичная", "Экспоненциальная", "Логарифмическая", "Тригонометрическая", "Полиномиальная"};
 
     private final UserRepository userRepository;
-    private final FunctionTypeRepository functionTypeRepository;
-    private final TabulatedFunctionRepository tabulatedFunctionRepository;
+    private final PointRepository functionTypeRepository;
+    private final FunctionRepository tabulatedFunctionRepository;
 
     public DataGenerator() {
         this.userRepository = new UserRepository();
-        this.functionTypeRepository = new FunctionTypeRepository();
-        this.tabulatedFunctionRepository = new TabulatedFunctionRepository();
+        this.functionTypeRepository = new PointRepository();
+        this.tabulatedFunctionRepository = new FunctionRepository();
     }
 
     public void generateAllData(int count) throws SQLException {
@@ -37,7 +42,7 @@ public class DataGenerator {
         // Генерация типов функций
         System.out.println("Генерация типов функций...");
         for (int i = 0; i < count; i++) {
-            FunctionType functionType = generateRandomFunctionType();
+            Point functionType = generateRandomFunctionType();
             functionTypeRepository.insert(functionType);
             if ((i + 1) % 1000 == 0) {
                 System.out.println("Создано типов функций: " + (i + 1));
@@ -47,7 +52,7 @@ public class DataGenerator {
         // Генерация табулированных функций
         System.out.println("Генерация табулированных функций...");
         for (int i = 0; i < count; i++) {
-            TabulatedFunction function = generateRandomTabulatedFunction();
+            Function function = generateRandomTabulatedFunction();
             tabulatedFunctionRepository.insert(function);
             if ((i + 1) % 1000 == 0) {
                 System.out.println("Создано табулированных функций: " + (i + 1));
@@ -60,29 +65,30 @@ public class DataGenerator {
     private User generateRandomUser() {
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String email = "user" + uuid + "@example.com";
-        String login = "user_" + uuid;
+        String username = "user_" + uuid;
         String passwordHash = generateRandomPasswordHash();
         String role = ROLES[random.nextInt(ROLES.length)];
 
-        return new User(email, login, passwordHash, role);
+        return new User(email, username, passwordHash, role);
     }
 
-    private FunctionType generateRandomFunctionType() {
+    private Point generateRandomFunctionType() {
         int nameIndex = random.nextInt(FUNCTION_NAMES.length);
         String name = FUNCTION_NAMES[nameIndex] + "_" + UUID.randomUUID().toString().substring(0, 4);
         String localizedName = FUNCTION_LOCALIZED_NAMES[nameIndex] + "_" + UUID.randomUUID().toString().substring(0, 4);
         int priority = random.nextInt(100);
 
-        return new FunctionType(name, localizedName, priority);
+        return new Point(name, localizedName, priority);
     }
 
-    private TabulatedFunction generateRandomTabulatedFunction() {
+    private Function generateRandomTabulatedFunction() {
         // Предполагаем, что ID пользователей и типов функций начинаются с 1
         Long userId = (long) (random.nextInt(10000) + 1);
         Integer functionTypeId = random.nextInt(10000) + 1;
+        String name = FUNCTION_NAMES[random.nextInt(FUNCTION_NAMES.length)];
         byte[] serializedData = generateRandomSerializedData();
 
-        return new TabulatedFunction(userId, functionTypeId, serializedData);
+        return new Function(userId, functionTypeId, serializedData, name);
     }
 
     private String generateRandomPasswordHash() {
