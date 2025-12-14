@@ -1,0 +1,18 @@
+| Requests/Tree       | Manual         | Framework |
+|---------------------|----------------|-----------|
+| Get all functions   |     174 ms     |           |
+| Update function     |     80  ms     |           |
+| Get function by id  |     91  ms     |           | 
+| Add function        |     77  ms     |           |
+| Delete function     |     76  ms     |           |
+| Get all points      |     82  ms     |           |
+| Get point by id     |     189 ms     |           |
+| Add point           |     178 ms     |           |
+| Update point        |     63  ms     |           |
+| Delete point        |     68  ms     |           |
+| Add user            |     78  ms     |           |
+| Update user         |     71  ms     |           |
+| Get all users       |     64  ms     |           |
+| Get user by id      |     65  ms     |           |
+| Delete user         |     60  ms     |           |
+| total duration      |     2.7 s      |           |
