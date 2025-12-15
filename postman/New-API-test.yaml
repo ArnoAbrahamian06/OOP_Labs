@@ -1,0 +1,735 @@
+openapi: 3.0.3
+info:
+  title: Laba2 API - Точки и функции
+  description: REST API для управления точками, функциями и пользователями
+  version: 1.0.0
+  contact:
+    name: API Поддержка
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+  - url: https://api.example.com
+    description: Продукционный сервер
+
+tags:
+  - name: Points
+    description: Операции с точками на графиках
+  - name: Functions
+    description: Операции с математическими функциями
+  - name: Users
+    description: Операции с пользователями
+  - name: Auth
+    description: Аутентификация и авторизация
+
+paths:
+  # ========== POINTS ENDPOINTS ==========
+  /api/points:
+    get:
+      tags:
+        - Points
+      summary: Получить все точки
+      description: Возвращает список всех точек с возможностью сортировки и фильтрации
+      parameters:
+        - name: sort
+          in: query
+          description: Поле для сортировки (id, functionId, xValue, yValue)
+          schema:
+            type: string
+            default: id
+        - name: asc
+          in: query
+          description: Порядок сортировки (true - по возрастанию, false - по убыванию)
+          schema:
+            type: boolean
+            default: true
+        - name: functionId
+          in: query
+          description: Фильтр по ID функции
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Point'
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '500':
+          description: Внутренняя ошибка сервера
+
+    post:
+      tags:
+        - Points
+      summary: Создать новую точку
+      description: Создает новую точку на графике
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointCreate'
+      responses:
+        '201':
+          description: Точка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+        '400':
+          description: Неверные данные точки
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /api/points/{id}:
+    get:
+      tags:
+        - Points
+      summary: Получить точку по ID
+      description: Возвращает точку по указанному идентификатору
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+        '400':
+          description: Неверный ID
+        '404':
+          description: Точка не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+    put:
+      tags:
+        - Points
+      summary: Обновить точку
+      description: Обновляет информацию о точке
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки для обновления
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointUpdate'
+      responses:
+        '200':
+          description: Точка успешно обновлена
+        '400':
+          description: Неверные данные
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Точка не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+    delete:
+      tags:
+        - Points
+      summary: Удалить точку
+      description: Удаляет точку по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки для удаления
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Точка успешно удалена
+        '400':
+          description: Неверный ID
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Точка не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+  # ========== FUNCTIONS ENDPOINTS ==========
+  /api/functions:
+    get:
+      tags:
+        - Functions
+      summary: Получить все функции
+      description: Возвращает список всех функций с возможностью сортировки и фильтрации
+      parameters:
+        - name: sort
+          in: query
+          description: Поле для сортировки (id, userId, name, created_at, updated_at)
+          schema:
+            type: string
+            default: id
+        - name: asc
+          in: query
+          description: Порядок сортировки
+          schema:
+            type: boolean
+            default: true
+        - name: userId
+          in: query
+          description: Фильтр по ID пользователя
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Function'
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Требуется аутентификация
+        '500':
+          description: Внутренняя ошибка сервера
+
+    post:
+      tags:
+        - Functions
+      summary: Создать новую функцию
+      description: Создает новую математическую функцию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionCreate'
+      responses:
+        '201':
+          description: Функция успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+        '400':
+          description: Неверные данные функции
+        '401':
+          description: Требуется аутентификация
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /api/functions/{id}:
+    get:
+      tags:
+        - Functions
+      summary: Получить функцию по ID
+      description: Возвращает функцию по указанному идентификатору
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+        '400':
+          description: Неверный ID
+        '404':
+          description: Функция не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+    put:
+      tags:
+        - Functions
+      summary: Обновить функцию
+      description: Обновляет информацию о функции
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции для обновления
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionUpdate'
+      responses:
+        '200':
+          description: Функция успешно обновлена
+        '400':
+          description: Неверные данные
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Функция не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+    delete:
+      tags:
+        - Functions
+      summary: Удалить функцию
+      description: Удаляет функцию по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции для удаления
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Функция успешно удалена
+        '400':
+          description: Неверный ID
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Функция не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+  # ========== USERS ENDPOINTS ==========
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Получить всех пользователей
+      description: Возвращает список всех пользователей с возможностью сортировки
+      parameters:
+        - name: sort
+          in: query
+          description: Поле для сортировки (id, username, role, created_at)
+          schema:
+            type: string
+            default: id
+        - name: asc
+          in: query
+          description: Порядок сортировки
+          schema:
+            type: boolean
+            default: true
+        - name: role
+          in: query
+          description: Фильтр по роли пользователя
+          schema:
+            type: string
+            enum: [user, admin]
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Неверный запрос
+        '401':
+          description: Требуется аутентификация (только для админов)
+        '403':
+          description: Недостаточно прав (только для админов)
+        '500':
+          description: Внутренняя ошибка сервера
+
+    post:
+      tags:
+        - Users
+      summary: Создать нового пользователя
+      description: Регистрация нового пользователя в системе
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверные данные пользователя
+        '409':
+          description: Пользователь с таким именем уже существует
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Получить пользователя по ID
+      description: Возвращает пользователя по указанному идентификатору
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверный ID
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+    put:
+      tags:
+        - Users
+      summary: Обновить пользователя
+      description: Обновляет информацию о пользователе
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя для обновления
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Пользователь успешно обновлен
+        '400':
+          description: Неверные данные
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+    delete:
+      tags:
+        - Users
+      summary: Удалить пользователя
+      description: Удаляет пользователя по указанному ID (доступно только для админов)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя для удаления
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Пользователь успешно удален
+        '400':
+          description: Неверный ID
+        '401':
+          description: Требуется аутентификация
+        '403':
+          description: Недостаточно прав (только для админов)
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+components:
+  schemas:
+    # ========== BASE SCHEMAS ==========
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Сообщение об ошибке
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+        path:
+          type: string
+          description: Путь запроса, вызвавшего ошибку
+      required:
+        - error
+        - timestamp
+        - path
+      example:
+        error: "Ресурс не найден"
+        timestamp: "2024-01-15T10:30:00Z"
+        path: "/api/points/999"
+
+    # ========== POINT SCHEMAS ==========
+    Point:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор точки
+          example: 1
+        functionId:
+          type: integer
+          format: int64
+          description: ID функции, к которой принадлежит точка
+          example: 5
+        xValue:
+          type: number
+          format: double
+          description: Координата X точки
+          example: 2.5
+        yValue:
+          type: number
+          format: double
+          description: Координата Y точки
+          example: 6.25
+      required:
+        - id
+        - functionId
+        - xValue
+        - yValue
+
+    PointCreate:
+      type: object
+      properties:
+        functionId:
+          type: integer
+          format: int64
+          description: ID функции, к которой принадлежит точка
+          example: 5
+        xValue:
+          type: number
+          format: double
+          description: Координата X точки
+          example: 2.5
+        yValue:
+          type: number
+          format: double
+          description: Координата Y точки
+          example: 6.25
+      required:
+        - functionId
+        - xValue
+        - yValue
+
+    PointUpdate:
+      type: object
+      properties:
+        xValue:
+          type: number
+          format: double
+          description: Координата X точки
+          example: 3.0
+        yValue:
+          type: number
+          format: double
+          description: Координата Y точки
+          example: 9.0
+      required:
+        - xValue
+        - yValue
+
+    # ========== FUNCTION SCHEMAS ==========
+    Function:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор функции
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          description: ID пользователя-владельца функции
+          example: 10
+        name:
+          type: string
+          description: Название функции
+          example: "Квадратичная функция"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+      required:
+        - id
+        - userId
+        - name
+        - createdAt
+
+    FunctionCreate:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: ID пользователя-владельца функции
+          example: 10
+        name:
+          type: string
+          description: Название функции
+          example: "Линейная функция"
+      required:
+        - userId
+        - name
+
+    FunctionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название функции
+          example: "Обновленное название"
+      required:
+        - name
+
+    # ========== USER SCHEMAS ==========
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор пользователя
+          example: 1
+        username:
+          type: string
+          description: Имя пользователя (логин)
+          example: "ivanov"
+        role:
+          type: string
+          description: Роль пользователя
+          enum: [user, admin]
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания учетной записи
+        passwordHash:
+          type: string
+          description: Хеш пароля (возвращается только при запросе собственного профиля или для админов)
+          example: "$2a$10$..."
+      required:
+        - id
+        - username
+        - role
+        - createdAt
+
+    UserCreate:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя (логин), 3-20 символов, буквы, цифры, подчеркивание
+          example: "newuser"
+        passwordHash:
+          type: string
+          description: Хеш пароля (должен содержать заглавные и строчные буквы, цифры, 8-32 символа)
+          example: "SecurePass123"
+        role:
+          type: string
+          description: Роль пользователя
+          enum: [user, admin]
+          default: "user"
+          example: "user"
+      required:
+        - username
+        - passwordHash
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя (логин)
+          example: "updated_user"
+        passwordHash:
+          type: string
+          description: Новый хеш пароля
+          example: "NewSecurePass456"
+        role:
+          type: string
+          description: Роль пользователя
+          enum: [user, admin]
+          example: "admin"
+      required:
+        - username
+
+  # ========== SECURITY SCHEMES ==========
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Базовая HTTP аутентификация
+
+
+# Глобальные требования безопасности
+security:
+  - BasicAuth: []

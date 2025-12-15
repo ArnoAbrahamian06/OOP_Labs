@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ssau.tk.cheefkeef.laba2.auth.AuthorizationService;
+import org.example.auth.AuthorizationService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
