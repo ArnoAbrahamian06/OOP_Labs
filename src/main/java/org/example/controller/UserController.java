@@ -1,84 +1,93 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.DTO.User.UserCreateDTO;
-import org.example.DTO.User.UserDTO;
 import org.example.DTO.User.UserResponseDTO;
 import org.example.DTO.User.UserUpdateDTO;
 import org.example.entity.User;
 import org.example.Mapper.UserMapper;
 import org.example.service.UserService;
 import jakarta.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "User Profile", description = "Управление профилем пользователя")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
+    private final UserService userService;
+    private final UserMapper userMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    public UserController(UserService userService, UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
+    }
 
-    // GET /api/users - получить всех пользователей
+    @Operation(summary = "Получить список всех пользователей")
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        List<User> users = userService.findAll();
-        List<UserResponseDTO> responseDTOs = users.stream()
+        log.info("API: Запрос списка всех пользователей");
+        List<UserResponseDTO> responseDTOs = userService.findAll().stream()
                 .map(userMapper::toUserResponseDTOFromEntity)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
         return ResponseEntity.ok(responseDTOs);
     }
 
-    // GET /api/users/{id} - получить пользователя по ID
+    @Operation(summary = "Получить пользователя по ID")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
-        Optional<User> userOpt = userService.findById(id);
-        if (userOpt.isPresent()) {
-            UserResponseDTO responseDTO = userMapper.toUserResponseDTOFromEntity(userOpt.get());
-            return ResponseEntity.ok(responseDTO);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        log.info("API: Запрос пользователя по ID: {}", id);
+        return userService.findById(id)
+                .map(userMapper::toUserResponseDTOFromEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/users - создать нового пользователя
+    @Operation(summary = "Создать пользователя (Регистрация)")
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
+        log.info("API: Создание нового пользователя с username: {}", userCreateDTO.getUsername());
+        // Маппер создает сущность с дефолтной ролью и датой
         User userToSave = userMapper.toEntity(userCreateDTO);
         User savedUser = userService.save(userToSave);
-        UserResponseDTO responseDTO = userMapper.toUserResponseDTOFromEntity(savedUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userMapper.toUserResponseDTOFromEntity(savedUser));
     }
 
-    // PUT /api/users/{id} - обновить пользователя целиком
+    @Operation(summary = "Обновить данные пользователя")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        Optional<User> existingUserOpt = userService.findById(id);
-        if (!existingUserOpt.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User existingUser = existingUserOpt.get();
-        userMapper.partialUpdateToEntity(userUpdateDTO, existingUser);
-        User updatedUser = userService.save(existingUser);
-        UserResponseDTO responseDTO = userMapper.toUserResponseDTOFromEntity(updatedUser);
-        return ResponseEntity.ok(responseDTO);
+        log.info("API: Обновление пользователя с ID: {}", id);
+        return userService.findById(id).map(existingUser -> {
+            // Частичное обновление полей через маппер
+            userMapper.partialUpdateToEntity(userUpdateDTO, existingUser);
+            User updatedUser = userService.save(existingUser);
+            return ResponseEntity.ok(userMapper.toUserResponseDTOFromEntity(updatedUser));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/users/{id} - удалить пользователя
+    @Operation(summary = "Удалить пользователя")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (userService.findById(id).isPresent()) {
+        log.info("API: Удаление пользователя с ID: {}", id);
+        if (userService.existsById(id)) {
             userService.deleteById(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         } else {
+            log.warn("DeleteMapping: Запрошен пользователь ID: {} для удаления, но он не найден.", id);
             return ResponseEntity.notFound().build();
         }
     }

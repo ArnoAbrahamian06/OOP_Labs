@@ -11,10 +11,6 @@ public class UserCreateDTO {
     @Size(min = 3, max = 50, message = "Имя пользователя должно быть от 3 до 50 символов")
     private String username;
 
-    @NotBlank(message = "Email не может быть пустым")
-    @Email(message = "Некорректный формат email")
-    private String email;
-
     @NotBlank(message = "Пароль не может быть пустым")
     @Size(min = 6, message = "Пароль должен быть не менее 6 символов")
     private String password;
@@ -26,14 +22,6 @@ public class UserCreateDTO {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
@@ -48,7 +36,6 @@ public class UserCreateDTO {
     public String toString() {
         return "UserCreateDTO{" +
                 "username='" + username + '\'' +
-                ", email='" + email + '\'' +
                 '}';
     }
 }

@@ -2,6 +2,7 @@ package org.example.repository;
 
 import org.example.entity.Tabulated_function;
 import org.example.entity.User;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,16 +19,17 @@ public interface TabulatedFunctionRepository extends JpaRepository<Tabulated_fun
     // Поиск по ID пользователя
     List<Tabulated_function> findByUserId(Long userId);
 
-    // Поиск функций, содержащих определенные данные
-    List<Tabulated_function> findBySerializedDataContaining(String data);
+    // Поиск функций по имени
+    List<Tabulated_function> findByNameContaining(String name);
+
+    // Поиск функций по точному имени
+    List<Tabulated_function> findByName(String name);
 
     // Поиск функций, созданных после указанной даты
     List<Tabulated_function> findByCreatedAtAfter(java.time.LocalDateTime date);
 
-    @Query(value = "SELECT tf.* FROM tabulated_functions tf " +
-            "WHERE (SELECT COUNT(*) FROM functions_types ft WHERE ft.tabulated_function_id = tf.id) > :minTypes",
-            nativeQuery = true)
-    List<Tabulated_function> findWithMinFunctionTypes(@Param("minTypes") int minTypes);
+    // Поиск функции по имени и ID пользователя (для проверки уникальности)
+    Optional<Tabulated_function> findByNameAndUserId(String name, Long userId);
 
     // Нативный SQL для поиска функций по имени типа функции
     @Query(value = "SELECT tf.* FROM tabulated_functions tf " +

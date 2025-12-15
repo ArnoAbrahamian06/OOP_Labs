@@ -6,23 +6,23 @@ import java.time.LocalDateTime;
 public class TabulatedFunctionListDTO {
 
     private Long id;
-    private String serializedData;
+    private String name;
     private LocalDateTime createdAt;
     private Long userId;
     private String username;
-    private int functionTypesCount; // количество типов функций
+    private int pointsCount; // количество точек функции
 
     // Конструкторы
     public TabulatedFunctionListDTO() {}
 
-    public TabulatedFunctionListDTO(Long id, String serializedData, LocalDateTime createdAt,
-                                    Long userId, String username, int functionTypesCount) {
+    public TabulatedFunctionListDTO(Long id, String name, LocalDateTime createdAt,
+                                    Long userId, String username, int pointsCount) {
         this.id = id;
-        this.serializedData = serializedData;
+        this.name = name;
         this.createdAt = createdAt;
         this.userId = userId;
         this.username = username;
-        this.functionTypesCount = functionTypesCount;
+        this.pointsCount = pointsCount;
     }
 
     // Геттеры и сеттеры
@@ -34,12 +34,12 @@ public class TabulatedFunctionListDTO {
         this.id = id;
     }
 
-    public String getSerializedData() {
-        return serializedData;
+    public String getName() {
+        return name;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -66,22 +66,22 @@ public class TabulatedFunctionListDTO {
         this.username = username;
     }
 
-    public int getFunctionTypesCount() {
-        return functionTypesCount;
+    public int getPointsCount() {
+        return pointsCount;
     }
 
-    public void setFunctionTypesCount(int functionTypesCount) {
-        this.functionTypesCount = functionTypesCount;
+    public void setPointsCount(int pointsCount) {
+        this.pointsCount = pointsCount;
     }
 
     @Override
     public String toString() {
         return "TabulatedFunctionListDTO{" +
                 "id=" + id +
-                ", serializedData='" + serializedData + '\'' +
+                ", name='" + name + '\'' +
                 ", userId=" + userId +
                 ", username='" + username + '\'' +
-                ", functionTypesCount=" + functionTypesCount +
+                ", pointsCount=" + pointsCount +
                 '}';
     }
 }

@@ -18,10 +18,6 @@ public class UserDTO {
     @Size(min = 3, max = 50, message = "Имя пользователя должно быть от 3 до 50 символов")
     private String username;
 
-    @NotBlank(message = "Email не может быть пустым")
-    @Email(message = "Некорректный формат email")
-    private String email;
-
     private Role role;
 
     private LocalDateTime createdAt;
@@ -31,10 +27,9 @@ public class UserDTO {
     // Конструкторы
     public UserDTO() {}
 
-    public UserDTO(Long id, String username, String email, Role role, LocalDateTime createdAt) {
+    public UserDTO(Long id, String username, Role role, LocalDateTime createdAt) {
         this.id = id;
         this.username = username;
-        this.email = email;
         this.role = role;
         this.createdAt = createdAt;
     }
@@ -54,14 +49,6 @@ public class UserDTO {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Role getRole() {
@@ -93,7 +80,6 @@ public class UserDTO {
         return "UserDTO{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
                 ", role=" + role +
                 ", createdAt=" + createdAt +
                 '}';

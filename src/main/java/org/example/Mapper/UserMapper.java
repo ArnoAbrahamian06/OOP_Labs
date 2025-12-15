@@ -27,8 +27,7 @@ public class UserMapper {
 
         User entity = new User();
         entity.setUsername(dto.getUsername());
-        entity.setEmail(dto.getEmail());
-        entity.setPasswordHash(dto.getPassword()); // ВНИМАНИЕ: хешируйте в сервисе!
+        entity.setPasswordHash(dto.getPassword());
         entity.setCreatedAt(LocalDateTime.now()); // или @PrePersist
         entity.setRole(Role.USER); // Значение по умолчанию
         return entity;
@@ -43,9 +42,7 @@ public class UserMapper {
         if (dto.getUsername() != null) {
             existingUser.setUsername(dto.getUsername());
         }
-        if (dto.getEmail() != null) {
-            existingUser.setEmail(dto.getEmail());
-        }
+
         if (dto.getPassword() != null) {
             existingUser.setPasswordHash(dto.getPassword());
         }
@@ -62,11 +59,10 @@ public class UserMapper {
         UserDTO dto = new UserDTO();
         dto.setId(entity.getId());
         dto.setUsername(entity.getUsername());
-        dto.setEmail(entity.getEmail());
         dto.setRole(entity.getRole());
         dto.setCreatedAt(entity.getCreatedAt());
 
-        // Преобразование списка Tabulated_function
+        // Преобразование списка Tabulated_function в TabulatedFunctionDTO
         if (entity.getTabulated_functions() != null) {
             dto.setTabulatedFunctions(entity.getTabulated_functions().stream()
                     .map(tabulatedFunctionMapper::toDTO)
@@ -84,7 +80,6 @@ public class UserMapper {
         UserResponseDTO responseDTO = new UserResponseDTO();
         responseDTO.setId(dto.getId());
         responseDTO.setUsername(dto.getUsername());
-        responseDTO.setEmail(dto.getEmail());
         responseDTO.setRole(dto.getRole() != null ? dto.getRole().toString() : null);
         responseDTO.setCreatedAt(dto.getCreatedAt());
         return responseDTO;
@@ -96,13 +91,12 @@ public class UserMapper {
             return null;
         }
 
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setId(entity.getId());
-        dto.setUsername(entity.getUsername());
-        dto.setEmail(entity.getEmail());
-        dto.setRole(entity.getRole() != null ? entity.getRole().toString() : null);
-        dto.setCreatedAt(entity.getCreatedAt());
-        return dto;
+        UserResponseDTO responseDTO = new UserResponseDTO();
+        responseDTO.setId(entity.getId());
+        responseDTO.setUsername(entity.getUsername());
+        responseDTO.setRole(entity.getRole() != null ? entity.getRole().toString() : null);
+        responseDTO.setCreatedAt(entity.getCreatedAt());
+        return responseDTO;
     }
 
     // Преобразование UserDTO -> User
@@ -114,7 +108,6 @@ public class UserMapper {
         User entity = new User();
         entity.setId(dto.getId());
         entity.setUsername(dto.getUsername());
-        entity.setEmail(dto.getEmail());
         entity.setRole(dto.getRole());
         entity.setCreatedAt(dto.getCreatedAt());
         // Не устанавливаем passwordHash и tabulatedFunctions из DTO

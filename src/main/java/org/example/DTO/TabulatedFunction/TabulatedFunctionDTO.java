@@ -2,18 +2,17 @@ package org.example.DTO.TabulatedFunction;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.example.DTO.FunctionType.FunctionTypeDTO;
-
+import org.example.DTO.Point.PointDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Основной
+// Основной (внутреннее DTO)
 public class TabulatedFunctionDTO {
 
     private Long id;
 
-    @NotBlank(message = "Данные функции не могут быть пустыми")
-    private String serializedData;
+    @NotBlank(message = "Имя функции не может быть пустым")
+    private String name;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -21,14 +20,14 @@ public class TabulatedFunctionDTO {
     @NotNull(message = "Пользователь не может быть пустым")
     private Long userId; // ID пользователя
 
-    private List<FunctionTypeDTO> functionTypes;
+    private List<PointDTO> points; // Список точек
 
     // Конструкторы
     public TabulatedFunctionDTO() {}
 
-    public TabulatedFunctionDTO(Long id, String serializedData, Long userId, LocalDateTime createdAt) {
+    public TabulatedFunctionDTO(Long id, String name, Long userId, LocalDateTime createdAt) {
         this.id = id;
-        this.serializedData = serializedData;
+        this.name = name;
         this.userId = userId;
         this.createdAt = createdAt;
     }
@@ -42,12 +41,12 @@ public class TabulatedFunctionDTO {
         this.id = id;
     }
 
-    public String getSerializedData() {
-        return serializedData;
+    public String getName() {
+        return name;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -74,19 +73,19 @@ public class TabulatedFunctionDTO {
         this.userId = userId;
     }
 
-    public List<FunctionTypeDTO> getFunctionTypes() {
-        return functionTypes;
+    public List<PointDTO> getPoints() {
+        return points;
     }
 
-    public void setFunctionTypes(List<FunctionTypeDTO> functionTypes) {
-        this.functionTypes = functionTypes;
+    public void setPoints(List<PointDTO> points) {
+        this.points = points;
     }
 
     @Override
     public String toString() {
         return "TabulatedFunctionDTO{" +
                 "id=" + id +
-                ", serializedData='" + serializedData + '\'' +
+                ", name='" + name + '\'' +
                 ", userId=" + userId +
                 ", createdAt=" + createdAt +
                 '}';

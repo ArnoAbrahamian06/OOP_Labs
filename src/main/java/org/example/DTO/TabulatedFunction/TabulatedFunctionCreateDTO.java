@@ -2,23 +2,27 @@ package org.example.DTO.TabulatedFunction;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.example.DTO.Point.PointDTO;
+import java.util.List;
 
-// Для Создания
+// Для создания (внутреннее DTO)
 public class TabulatedFunctionCreateDTO {
 
-    @NotBlank(message = "Данные функции не могут быть пустыми")
-    private String serializedData;
+    @NotBlank(message = "Имя функции не может быть пустым")
+    private String name;
 
     @NotNull(message = "ID пользователя не может быть пустым")
     private Long userId;
 
+    private List<PointDTO> points;
+
     // Геттеры и сеттеры
-    public String getSerializedData() {
-        return serializedData;
+    public String getName() {
+        return name;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getUserId() {
@@ -29,11 +33,20 @@ public class TabulatedFunctionCreateDTO {
         this.userId = userId;
     }
 
+    public List<PointDTO> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<PointDTO> points) {
+        this.points = points;
+    }
+
     @Override
     public String toString() {
         return "TabulatedFunctionCreateDTO{" +
-                "serializedData='" + serializedData + '\'' +
+                "name='" + name + '\'' +
                 ", userId=" + userId +
+                ", points=" + points +
                 '}';
     }
 }

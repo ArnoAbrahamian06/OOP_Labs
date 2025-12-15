@@ -1,26 +1,39 @@
 package org.example.DTO.TabulatedFunction;
 
 import jakarta.validation.constraints.NotBlank;
+import org.example.DTO.Point.PointDTO;
+import java.util.List;
 
-// Для обнавления
+// Для обновления (внутреннее DTO)
 public class TabulatedFunctionUpdateDTO {
 
-    @NotBlank(message = "Данные функции не могут быть пустыми")
-    private String serializedData;
+    @NotBlank(message = "Имя функции не может быть пустым")
+    private String name;
+
+    private List<PointDTO> points;
 
     // Геттеры и сеттеры
-    public String getSerializedData() {
-        return serializedData;
+    public String getName() {
+        return name;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<PointDTO> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<PointDTO> points) {
+        this.points = points;
     }
 
     @Override
     public String toString() {
         return "TabulatedFunctionUpdateDTO{" +
-                "serializedData='" + serializedData + '\'' +
+                "name='" + name + '\'' +
+                ", points=" + points +
                 '}';
     }
 }

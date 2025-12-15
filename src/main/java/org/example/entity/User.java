@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_username", columnList = "username"),
-        @Index(name = "idx_user_email", columnList = "email"),
         @Index(name = "idx_user_role", columnList = "role"),
         @Index(name = "idx_user_created_at", columnList = "createdAt")
 })
@@ -25,18 +24,14 @@ public class User {
     @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
-
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     // Связь One-to-Many с Tabulated_function
@@ -47,12 +42,16 @@ public class User {
     // Обязательные конструкторы
     public User() {}
 
-    public User(String username, String email, String passwordHash) {
+    public User(String username, String passwordHash) {
         this.username = username;
-        this.email = email;
         this.passwordHash = passwordHash;
-        this.createdAt = LocalDateTime.now();
-        this.role = Role.USER; // значение по умолчанию
+       this.role = Role.USER; // значение по умолчанию
+    }
+
+    public User(String username, String passwordHash, Role role) {
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.role = role;
     }
 
     // Жизненный цикл Entity - автоматическое обновление дат
@@ -73,9 +72,6 @@ public class User {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
 
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
@@ -103,7 +99,6 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
                 ", role=" + role +
                 '}';
     }
