@@ -17,7 +17,7 @@ public class UserMapper {
         logger.debug("Преобразование User(id={}) в UserDTO", user.getId());
         return new UserDTO(
                 user.getId(),
-                user.getLogin(),
+                user.getUsername(),
                 user.getRole(),
                 user.getCreated_at()
         );
@@ -32,7 +32,7 @@ public class UserMapper {
         logger.debug("Преобразование UserDTO в User");
         User user = new User();
         user.setId(dto.getId());
-        user.setLogin(dto.getLogin());
+        user.setLogin(dto.getUsername());
         user.setRole(dto.getRole());
         user.setPasswordHash(dto.getPasswordHash());
         user.setCreated_at(dto.getCreated_at());

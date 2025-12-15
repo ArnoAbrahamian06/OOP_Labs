@@ -1,5 +1,7 @@
 package org.example.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 public class User {
@@ -23,7 +25,7 @@ public class User {
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
-    public String getLogin() { return username; }
+    public String getUsername() { return username; }
     public void setLogin(String username) { this.username = username; }
 
     public String getRole() { return role; }

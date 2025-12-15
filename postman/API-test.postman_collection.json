@@ -1,0 +1,496 @@
+{
+	"info": {
+		"_postman_id": "000449f0-409e-4096-a1fc-fece1a6e842c",
+		"name": "API-test-collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50605587",
+		"_collection_link": "https://abramyanarno2006-3067029.postman.co/workspace/%D0%90%D1%80%D0%BD%D0%BE-%D0%90%D0%B1%D1%80%D0%B0%D0%BC%D1%8F%D0%BD's-Workspace~3b941825-65cc-4464-84cd-a08899258a5e/collection/50605587-000449f0-409e-4096-a1fc-fece1a6e842c?action=share&source=collection_link&creator=50605587"
+	},
+	"item": [
+		{
+			"name": "Function",
+			"item": [
+				{
+					"name": "Get all functions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/functions",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"functions"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update function",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": 1,\r\n  \"name\": \"cos(x)\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/functions/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"functions",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/functions/1' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"name\": \"cos(x)\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get function by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/functions/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"functions",
+								"3"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/1' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Add function",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": 4,\r\n  \"name\": \"cos(x)\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/functions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"functions"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"name\": \"cos(x)\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete function",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/functions/128",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"functions",
+								"128"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/functions/1' \\\r\n  -H 'accept: */*'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Point",
+			"item": [
+				{
+					"name": "Get all points",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/points",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"points"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/points' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get point by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/points/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"points",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/points/1' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Add point",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"functionId\": 1,\r\n  \"xValue\": 1.5,\r\n  \"yValue\": 0.997\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/points",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"points"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/points' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"functionId\": 1,\r\n  \"xValue\": 1.5,\r\n  \"yValue\": 0.997\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update point ",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"functionId\": 1,\r\n  \"xValue\": 1.5,\r\n  \"yValue\": 0.997\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/points/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"points",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/points/1' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"functionId\": 1,\r\n  \"xValue\": 1.5,\r\n  \"yValue\": 0.997\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete point",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/points/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"points",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/points/1' \\\r\n  -H 'accept: */*'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Add user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/users",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update user",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/users/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get all users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/users",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/users/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/users/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: */*'"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

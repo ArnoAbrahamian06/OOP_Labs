@@ -1,6 +1,6 @@
 package org.example.models;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Point {
     private Integer id;
@@ -34,7 +34,7 @@ public class Point {
     public void setFunctionId(Integer functionId) {
         this.functionId = functionId;
     }
-
+    @JsonProperty("xValue")
     public Double getXValue() {
         return xValue;
     }
@@ -42,7 +42,7 @@ public class Point {
     public void setXValue(Double xValue) {
         this.xValue = xValue;
     }
-
+    @JsonProperty("yValue")
     public Double getYValue() {
         return yValue;
     }

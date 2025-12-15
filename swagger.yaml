@@ -1,0 +1,747 @@
+openapi: 3.0.0
+info:
+  title: Table Functions API
+  description: API для управления табличными функциями, пользователями и точками
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.org
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+  - url: https://api.example.org
+    description: Продакшен сервер
+
+tags:
+  - name: Functions
+    description: Операции с табличными функциями
+  - name: Points
+    description: Операции с точками функций
+  - name: Users
+    description: Управление пользователями
+
+paths:
+  # ==================== ФУНКЦИИ ====================
+  /api/functions:
+    get:
+      tags:
+        - Functions
+      summary: Получить все функции
+      description: Возвращает список всех табличных функций
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Function'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Functions
+      summary: Создать новую функцию
+      description: Создает новую табличную функцию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionRequest'
+      responses:
+        '201':
+          description: Функция успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/functions/{id}:
+    get:
+      tags:
+        - Functions
+      summary: Получить функцию по ID
+      description: Возвращает функцию по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+        '404':
+          description: Функция не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Functions
+      summary: Обновить функцию
+      description: Обновляет существующую функцию
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции для обновления
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionRequest'
+      responses:
+        '200':
+          description: Функция успешно обновлена
+        '404':
+          description: Функция не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Functions
+      summary: Удалить функцию
+      description: Удаляет функцию по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID функции для удаления
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Функция успешно удалена
+        '404':
+          description: Функция не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==================== ТОЧКИ ====================
+  /api/points:
+    get:
+      tags:
+        - Points
+      summary: Получить все точки
+      description: Возвращает список всех точек
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Point'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Points
+      summary: Создать новую точку
+      description: Создает новую точку для функции
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointRequest'
+      responses:
+        '201':
+          description: Точка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/points/{id}:
+    get:
+      tags:
+        - Points
+      summary: Получить точку по ID
+      description: Возвращает точку по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+        '404':
+          description: Точка не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Points
+      summary: Обновить точку
+      description: Обновляет существующую точку
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки для обновления
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointRequest'
+      responses:
+        '200':
+          description: Точка успешно обновлена
+        '404':
+          description: Точка не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Points
+      summary: Удалить точку
+      description: Удаляет точку по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID точки для удаления
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Точка успешно удалена
+        '404':
+          description: Точка не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==================== ПОЛЬЗОВАТЕЛИ ====================
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Получить всех пользователей
+      description: Возвращает список всех пользователей
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Users
+      summary: Создать нового пользователя
+      description: Создает нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Получить пользователя по ID
+      description: Возвращает пользователя по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Users
+      summary: Обновить пользователя
+      description: Обновляет существующего пользователя
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя для обновления
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Пользователь успешно обновлен
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Users
+      summary: Удалить пользователя
+      description: Удаляет пользователя по указанному ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя для удаления
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Пользователь успешно удален
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Неверный формат ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    # ============ МОДЕЛИ ДАННЫХ ============
+    Function:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор функции
+          example: 1
+        userId:
+          type: integer
+          description: ID пользователя, создавшего функцию
+          example: 1
+        name:
+          type: string
+          description: Название функции
+          example: "sin(x)"
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+          example: "2024-01-15T10:30:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+          example: "2024-01-15T11:45:00"
+
+    FunctionRequest:
+      type: object
+      required:
+        - userId
+        - name
+      properties:
+        userId:
+          type: integer
+          description: ID пользователя, создающего функцию
+          example: 1
+        name:
+          type: string
+          description: Название функции
+          example: "cos(x)"
+
+    Point:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор точки
+          example: 1
+        functionId:
+          type: integer
+          description: ID функции, к которой относится точка
+          example: 1
+        xValue:
+          type: number
+          format: double
+          description: Значение координаты X
+          example: 1.5
+        yValue:
+          type: number
+          format: double
+          description: Значение координаты Y
+          example: 0.997
+
+    PointRequest:
+      type: object
+      required:
+        - functionId
+        - xValue
+        - yValue
+      properties:
+        functionId:
+          type: integer
+          description: ID функции, к которой относится точка
+          example: 1
+        xValue:
+          type: number
+          format: double
+          description: Значение координаты X
+          example: 1.5
+        yValue:
+          type: number
+          format: double
+          description: Значение координаты Y
+          example: 0.997
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор пользователя
+          example: 1
+        username:
+          type: string
+          description: Имя пользователя (логин)
+          example: "john_doe"
+        passwordHash:
+          type: string
+          description: Хэш пароля
+          example: "$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc..."
+        role:
+          type: string
+          description: Роль пользователя
+          example: "USER"
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+          example: "2024-01-15T09:15:00"
+
+    UserRequest:
+      type: object
+      required:
+        - username
+        - passwordHash
+        - role
+      properties:
+        username:
+          type: string
+          description: Имя пользователя (логин)
+          example: "jane_doe"
+        passwordHash:
+          type: string
+          description: Хэш пароля
+          example: "$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc..."
+        role:
+          type: string
+          description: Роль пользователя
+          example: "ADMIN"
+
+    # ============ ОШИБКИ ============
+    Error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T12:00:00"
+        status:
+          type: integer
+          description: HTTP статус код
+          example: 404
+        error:
+          type: string
+          description: Тип ошибки
+          example: "Not Found"
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: "Function not found with id: 999"
+        path:
+          type: string
+          description: Путь запроса
+          example: "/api/functions/999"
+
+  # ============ ПАРАМЕТРЫ ЗАПРОСА ============
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Номер страницы (начинается с 0)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    SizeParam:
+      name: size
+      in: query
+      description: Количество элементов на странице
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    SortParam:
+      name: sort
+      in: query
+      description: Поле для сортировки
+      required: false
+      schema:
+        type: string
+
+    DirectionParam:
+      name: direction
+      in: query
+      description: Направление сортировки (ASC/DESC)
+      required: false
+      schema:
+        type: string
+        enum: [ASC, DESC]
+        default: ASC
+
+  # ============ ЗАГОЛОВКИ ============
+  headers:
+    X-Total-Count:
+      description: Общее количество элементов
+      schema:
+        type: integer
+    X-Page-Number:
+      description: Номер текущей страницы
+      schema:
+        type: integer
+    X-Page-Size:
+      description: Размер страницы
+      schema:
+        type: integer
+    X-Total-Pages:
+      description: Общее количество страниц
+      schema:
+        type: integer
+
+  # ============ ОТВЕТЫ ПО УМОЛЧАНИЮ ============
+  responses:
+    UnauthorizedError:
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ForbiddenError:
+      description: Доступ запрещен
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFoundError:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ValidationError:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              status:
+                type: integer
+              error:
+                type: string
+              message:
+                type: string
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    message:
+                      type: string

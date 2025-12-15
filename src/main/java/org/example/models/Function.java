@@ -1,5 +1,6 @@
 package org.example.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 public class Function {

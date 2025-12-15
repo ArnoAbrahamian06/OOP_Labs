@@ -53,7 +53,7 @@ public class UserDAO {
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     User user = mapResultSetToUser(resultSet);
-                    logger.debug("Пользователь с ID {} найден: {}", id, user.getLogin());
+                    logger.debug("Пользователь с ID {} найден: {}", id, user.getUsername());
                     return Optional.of(user);
                 }
             }
@@ -150,7 +150,7 @@ public class UserDAO {
 
     // INSERT - создание нового пользователя
     public User insert(User user) {
-        logger.info("Создание нового пользователя: {}", user.getLogin());
+        logger.info("Создание нового пользователя: {}", user.getUsername());
         String sql = "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = DBConnection.getConnection();
@@ -158,13 +158,13 @@ public class UserDAO {
 
             LocalDateTime now = LocalDateTime.now();
 
-            statement.setString(1, user.getLogin());
+            statement.setString(1, user.getUsername());
             statement.setString(2, user.getPasswordHash());
             statement.setString(3, user.getRole());
             statement.setTimestamp(4, Timestamp.valueOf(now));
 
             logger.debug("Выполнение SQL: {} с параметрами username={}, role={}",
-                    sql, user.getLogin(), user.getRole());
+                    sql, user.getUsername(), user.getRole());
 
             int affectedRows = statement.executeUpdate();
 
@@ -173,15 +173,15 @@ public class UserDAO {
                     if (generatedKeys.next()) {
                         user.setId(generatedKeys.getInt(1));
                         user.setCreated_at(now);
-                        logger.info("Пользователь {} успешно создан с ID: {}", user.getLogin(), user.getId());
+                        logger.info("Пользователь {} успешно создан с ID: {}", user.getUsername(), user.getId());
                         return user;
                     }
                 }
             }
-            logger.warn("Пользователь {} не был создан, затронуто 0 строк", user.getLogin());
+            logger.warn("Пользователь {} не был создан, затронуто 0 строк", user.getUsername());
 
         } catch (SQLException e) {
-            logger.error("Ошибка при создании пользователя: {}", user.getLogin(), e);
+            logger.error("Ошибка при создании пользователя: {}", user.getUsername(), e);
             throw new RuntimeException("Database error", e);
         }
         return null;
@@ -195,13 +195,13 @@ public class UserDAO {
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, user.getLogin());
+            statement.setString(1, user.getUsername());
             statement.setString(2, user.getPasswordHash());
             statement.setString(3, user.getRole());
             statement.setInt(4, user.getId());
 
             logger.debug("Выполнение SQL: {} с параметрами username={}, role={}, id={}",
-                    sql, user.getLogin(), user.getRole(), user.getId());
+                    sql, user.getUsername(), user.getRole(), user.getId());
 
             int affectedRows = statement.executeUpdate();
             boolean success = affectedRows > 0;
