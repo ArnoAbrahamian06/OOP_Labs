@@ -27,7 +27,7 @@ class UserDAOTest {
 
         // Создаем тестового пользователя
         testUser = new User();
-        testUser.setLogin("test_user_" + System.currentTimeMillis());
+        testUser.setUsername("test_user_" + System.currentTimeMillis());
         testUser.setPasswordHash("hashed_password_" + System.currentTimeMillis());
         testUser.setRole("user");
         testUser.setCreated_at(LocalDateTime.now());
@@ -150,7 +150,7 @@ class UserDAOTest {
         // Подготавливаем обновленные данные
         User updatedUser = new User();
         updatedUser.setId(testUser.getId());
-        updatedUser.setLogin(testUser.getUsername() + "_updated");
+        updatedUser.setUsername(testUser.getUsername() + "_updated");
         updatedUser.setPasswordHash("new_hashed_password");
         updatedUser.setRole("admin");
 
@@ -222,7 +222,7 @@ class UserDAOTest {
 
         // Создаем еще одного пользователя для теста
         User anotherUser = new User();
-        anotherUser.setLogin("another_test_user_" + System.currentTimeMillis());
+        anotherUser.setUsername("another_test_user_" + System.currentTimeMillis());
         anotherUser.setPasswordHash("another_password_hash");
         anotherUser.setRole("user");
 
@@ -332,7 +332,7 @@ class UserDAOTest {
 
         // Создаем временного пользователя для удаления
         User tempUser = new User();
-        tempUser.setLogin("temp_user_for_deletion_" + System.currentTimeMillis());
+        tempUser.setUsername("temp_user_for_deletion_" + System.currentTimeMillis());
         tempUser.setPasswordHash("temp_password_hash");
         tempUser.setRole("user");
 
@@ -354,7 +354,7 @@ class UserDAOTest {
 
         // Создаем временного пользователя для удаления
         User tempUser = new User();
-        tempUser.setLogin("another_temp_user_" + System.currentTimeMillis());
+        tempUser.setUsername("another_temp_user_" + System.currentTimeMillis());
         tempUser.setPasswordHash("temp_hash");
         tempUser.setRole("user");
 
@@ -390,7 +390,7 @@ class UserDAOTest {
         // Обновление несуществующего пользователя
         User nonExistentUserForUpdate = new User();
         nonExistentUserForUpdate.setId(-999);
-        nonExistentUserForUpdate.setLogin("test");
+        nonExistentUserForUpdate.setUsername("test");
         nonExistentUserForUpdate.setPasswordHash("test");
         nonExistentUserForUpdate.setRole("user");
 
@@ -415,7 +415,7 @@ class UserDAOTest {
         List<User> usersToCreate = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             User user = new User();
-            user.setLogin("mass_user_" + i + "_" + System.currentTimeMillis());
+            user.setUsername("mass_user_" + i + "_" + System.currentTimeMillis());
             user.setPasswordHash("hash_" + i);
             user.setRole(i % 2 == 0 ? "user" : "admin");
             usersToCreate.add(user);
@@ -481,7 +481,7 @@ class UserDAOTest {
         // создать пользователя с невалидными данными, которые могут вызвать SQLException
         // Например, попробуем создать пользователя с очень длинным username
         User invalidUser = new User();
-        invalidUser.setLogin("a".repeat(1000)); // Предположительно превышает лимит БД
+        invalidUser.setUsername("a".repeat(1000)); // Предположительно превышает лимит БД
         invalidUser.setPasswordHash("hash");
         invalidUser.setRole("user");
 

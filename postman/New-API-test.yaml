@@ -1,137 +1,131 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Laba2 API - Точки и функции
-  description: REST API для управления точками, функциями и пользователями
+  title: Functions API
+  description: API для управления пользователями, функциями и точками функций
   version: 1.0.0
-  contact:
-    name: API Поддержка
-    email: support@example.com
-
 servers:
-  - url: http://localhost:8080
-    description: Локальный сервер разработки
-  - url: https://api.example.com
-    description: Продукционный сервер
-
+  - url: http://localhost:8080/api
+    description: Локальный сервер
+  - url: https://api.example.com/api
+    description: Продакшен сервер
 tags:
-  - name: Points
-    description: Операции с точками на графиках
-  - name: Functions
-    description: Операции с математическими функциями
-  - name: Users
+  - name: users
     description: Операции с пользователями
-  - name: Auth
-    description: Аутентификация и авторизация
-
+  - name: functions
+    description: Операции с функциями
+  - name: points
+    description: Операции с точками функций
+  - name: operations
+    description: Математические операции с функциями
 paths:
-  # ========== POINTS ENDPOINTS ==========
-  /api/points:
+  # ========== USERS ==========
+  /users:
     get:
-      tags:
-        - Points
-      summary: Получить все точки
-      description: Возвращает список всех точек с возможностью сортировки и фильтрации
+      tags: [users]
+      summary: Получить список всех пользователей
+      description: |
+        Доступно только администраторам.
+        Возвращает список всех пользователей с возможностью сортировки.
+      security:
+        - basicAuth: []
       parameters:
-        - name: sort
+        - name: sortField
           in: query
-          description: Поле для сортировки (id, functionId, xValue, yValue)
           schema:
             type: string
-            default: id
-        - name: asc
+            enum: [id, username, role, password_hash, created_at]
+          description: Поле для сортировки
+        - name: ascending
           in: query
-          description: Порядок сортировки (true - по возрастанию, false - по убыванию)
           schema:
             type: boolean
             default: true
-        - name: functionId
-          in: query
-          description: Фильтр по ID функции
-          schema:
-            type: integer
+          description: Порядок сортировки (true - по возрастанию)
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Point'
-        '400':
-          description: Неверный запрос
+                  $ref: '#/components/schemas/UserDTO'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     post:
-      tags:
-        - Points
-      summary: Создать новую точку
-      description: Создает новую точку на графике
+      tags: [users]
+      summary: Создать нового пользователя
+      description: Доступно только администраторам
+      security:
+        - basicAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PointCreate'
+              $ref: '#/components/schemas/UserCreateRequest'
       responses:
         '201':
-          description: Точка успешно создана
+          description: Пользователь успешно создан
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Point'
+                $ref: '#/components/schemas/UserDTO'
         '400':
-          description: Неверные данные точки
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-  /api/points/{id}:
+  /users/{userId}:
     get:
-      tags:
-        - Points
-      summary: Получить точку по ID
-      description: Возвращает точку по указанному идентификатору
+      tags: [users]
+      summary: Получить пользователя по ID
+      description: Пользователи могут видеть только свой профиль, администраторы - любого пользователя
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
-          description: ID точки
           schema:
             type: integer
             minimum: 1
+          description: ID пользователя
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Point'
+                $ref: '#/components/schemas/UserDTO'
         '400':
-          description: Неверный ID
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Точка не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     put:
-      tags:
-        - Points
-      summary: Обновить точку
-      description: Обновляет информацию о точке
+      tags: [users]
+      summary: Обновить пользователя
+      description: Пользователи могут обновлять только свой профиль
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
-          description: ID точки для обновления
           schema:
             type: integer
             minimum: 1
@@ -140,152 +134,280 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PointUpdate'
+              $ref: '#/components/schemas/UserUpdateRequest'
       responses:
         '200':
-          description: Точка успешно обновлена
+          description: Пользователь успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
         '400':
-          description: Неверные данные
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Точка не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     delete:
-      tags:
-        - Points
-      summary: Удалить точку
-      description: Удаляет точку по указанному ID
+      tags: [users]
+      summary: Удалить пользователя
+      description: Доступно только администраторам
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
-          description: ID точки для удаления
           schema:
             type: integer
             minimum: 1
       responses:
         '204':
-          description: Точка успешно удалена
-        '400':
-          description: Неверный ID
+          description: Пользователь успешно удален
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Точка не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-  # ========== FUNCTIONS ENDPOINTS ==========
-  /api/functions:
+  /users/search/by-login/{login}:
     get:
-      tags:
-        - Functions
-      summary: Получить все функции
-      description: Возвращает список всех функций с возможностью сортировки и фильтрации
+      tags: [users]
+      summary: Найти пользователя по логину
+      description: Пользователи могут искать только себя
+      security:
+        - basicAuth: []
       parameters:
-        - name: sort
-          in: query
-          description: Поле для сортировки (id, userId, name, created_at, updated_at)
+        - name: login
+          in: path
+          required: true
           schema:
             type: string
-            default: id
-        - name: asc
+            pattern: '^[a-zA-Z0-9_]{3,20}$'
+          description: Логин пользователя
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [users]
+      summary: Удалить пользователя по логину
+      description: Доступно только администраторам
+      security:
+        - basicAuth: []
+      parameters:
+        - name: login
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Пользователь успешно удален
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/search/by-role/{role}:
+    get:
+      tags: [users]
+      summary: Найти пользователей по роли
+      description: Доступно только администраторам
+      security:
+        - basicAuth: []
+      parameters:
+        - name: role
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [user, admin]
+          description: Роль пользователя
+        - name: sortField
           in: query
-          description: Порядок сортировки
+          schema:
+            type: string
+            enum: [id, username, role, password_hash, created_at]
+          description: Поле для сортировки
+        - name: ascending
+          in: query
           schema:
             type: boolean
             default: true
-        - name: userId
-          in: query
-          description: Фильтр по ID пользователя
-          schema:
-            type: integer
+          description: Порядок сортировки
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Function'
-        '400':
-          description: Неверный запрос
+                  $ref: '#/components/schemas/UserDTO'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
+  /users/search/by-ids:
     post:
-      tags:
-        - Functions
-      summary: Создать новую функцию
-      description: Создает новую математическую функцию
+      tags: [users]
+      summary: Множественный поиск пользователей по IDs
+      description: Доступно только администраторам
+      security:
+        - basicAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FunctionCreate'
+              $ref: '#/components/schemas/IdsRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ========== FUNCTIONS ==========
+  /functions:
+    get:
+      tags: [functions]
+      summary: Получить список функций
+      description: |
+        Администраторы видят все функции, обычные пользователи - только свои.
+        Поддерживает сортировку.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: sortField
+          in: query
+          schema:
+            type: string
+            enum: [id, userid, name, created_at, updated_at]
+          description: Поле для сортировки
+        - name: ascending
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Порядок сортировки
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [functions]
+      summary: Создать новую функцию
+      description: Пользователи могут создавать только свои функции
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionCreateRequest'
       responses:
         '201':
           description: Функция успешно создана
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Function'
+                $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверные данные функции
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-  /api/functions/{id}:
+  /functions/{functionId}:
     get:
-      tags:
-        - Functions
+      tags: [functions]
       summary: Получить функцию по ID
-      description: Возвращает функцию по указанному идентификатору
+      description: Пользователи могут получать только свои функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: functionId
           in: path
           required: true
-          description: ID функции
           schema:
             type: integer
             minimum: 1
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Function'
+                $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверный ID
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Функция не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     put:
-      tags:
-        - Functions
+      tags: [functions]
       summary: Обновить функцию
-      description: Обновляет информацию о функции
+      description: Пользователи могут обновлять только свои функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: functionId
           in: path
           required: true
-          description: ID функции для обновления
           schema:
             type: integer
             minimum: 1
@@ -294,31 +416,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FunctionUpdate'
+              $ref: '#/components/schemas/FunctionUpdateRequest'
       responses:
         '200':
           description: Функция успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверные данные
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Функция не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     delete:
-      tags:
-        - Functions
+      tags: [functions]
       summary: Удалить функцию
-      description: Удаляет функцию по указанному ID
+      description: Пользователи могут удалять только свои функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: functionId
           in: path
           required: true
-          description: ID функции для удаления
           schema:
             type: integer
             minimum: 1
@@ -326,410 +451,1270 @@ paths:
         '204':
           description: Функция успешно удалена
         '400':
-          description: Неверный ID
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: Функция не найдена
+          $ref: '#/components/responses/NotFoundError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-  # ========== USERS ENDPOINTS ==========
-  /api/users:
+  /functions/search:
     get:
-      tags:
-        - Users
-      summary: Получить всех пользователей
-      description: Возвращает список всех пользователей с возможностью сортировки
+      tags: [functions]
+      summary: Расширенный поиск функций
+      description: Поддерживает поиск по пользователю и/или имени функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: sort
+        - name: userId
           in: query
-          description: Поле для сортировки (id, username, role, created_at)
+          schema:
+            type: integer
+            minimum: 1
+          description: ID пользователя для фильтрации
+        - name: namePattern
+          in: query
           schema:
             type: string
-            default: id
-        - name: asc
+          description: Паттерн для поиска по имени функции
+        - name: sortField
           in: query
-          description: Порядок сортировки
+          schema:
+            type: string
+            enum: [id, userid, name, created_at, updated_at]
+          description: Поле для сортировки
+        - name: ascending
+          in: query
           schema:
             type: boolean
             default: true
-        - name: role
-          in: query
-          description: Фильтр по роли пользователя
-          schema:
-            type: string
-            enum: [user, admin]
+          description: Порядок сортировки
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверный запрос
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация (только для админов)
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав (только для админов)
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-    post:
-      tags:
-        - Users
-      summary: Создать нового пользователя
-      description: Регистрация нового пользователя в системе
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
-      responses:
-        '201':
-          description: Пользователь успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Неверные данные пользователя
-        '409':
-          description: Пользователь с таким именем уже существует
-        '500':
-          description: Внутренняя ошибка сервера
-
-  /api/users/{id}:
+  /functions/search/by-name/{name}:
     get:
-      tags:
-        - Users
-      summary: Получить пользователя по ID
-      description: Возвращает пользователя по указанному идентификатору
+      tags: [functions]
+      summary: Поиск функций по имени
+      description: Пользователи видят только свои функции с указанным именем
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: name
           in: path
           required: true
-          description: ID пользователя
           schema:
-            type: integer
-            minimum: 1
+            type: string
+          description: Имя функции для поиска
+        - name: sortField
+          in: query
+          schema:
+            type: string
+            enum: [id, userid, name, created_at, updated_at]
+        - name: ascending
+          in: query
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
-          description: Успешный запрос
+          description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверный ID
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
-        '403':
-          description: Недостаточно прав
-        '404':
-          description: Пользователь не найден
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
 
-    put:
-      tags:
-        - Users
-      summary: Обновить пользователя
-      description: Обновляет информацию о пользователе
+  /functions/search/by-user/{userId}:
+    get:
+      tags: [functions]
+      summary: Поиск функций по ID пользователя
+      description: Пользователи могут искать только свои функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
-          description: ID пользователя для обновления
           schema:
             type: integer
             minimum: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserUpdate'
+        - name: sortField
+          in: query
+          schema:
+            type: string
+            enum: [id, userid, name, created_at, updated_at]
+        - name: ascending
+          in: query
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
-          description: Пользователь успешно обновлен
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
         '400':
-          description: Неверные данные
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав
-        '404':
-          description: Пользователь не найден
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
-
+          $ref: '#/components/responses/ServerError'
     delete:
-      tags:
-        - Users
-      summary: Удалить пользователя
-      description: Удаляет пользователя по указанному ID (доступно только для админов)
+      tags: [functions]
+      summary: Удалить все функции пользователя
+      description: Пользователи могут удалять только свои функции
+      security:
+        - basicAuth: []
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
-          description: ID пользователя для удаления
           schema:
             type: integer
             minimum: 1
       responses:
         '204':
-          description: Пользователь успешно удален
+          description: Функции успешно удалены
         '400':
-          description: Неверный ID
+          $ref: '#/components/responses/BadRequestError'
         '401':
-          description: Требуется аутентификация
+          $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Недостаточно прав (только для админов)
-        '404':
-          description: Пользователь не найден
+          $ref: '#/components/responses/ForbiddenError'
         '500':
-          description: Внутренняя ошибка сервера
+          $ref: '#/components/responses/ServerError'
+
+  /functions/search/by-user-and-name:
+    get:
+      tags: [functions]
+      summary: Поиск функций по пользователю и имени
+      description: Пользователи могут искать только свои функции
+      security:
+        - basicAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/users/{userId}/count:
+    get:
+      tags: [functions]
+      summary: Получить количество функций пользователя
+      description: Пользователи могут получать только количество своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/exists:
+    get:
+      tags: [functions]
+      summary: Проверить существование функции
+      description: Проверяет, существует ли функция с указанным именем у пользователя
+      security:
+        - basicAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/batch/search-by-ids:
+    post:
+      tags: [functions]
+      summary: Множественный поиск функций по IDs
+      description: Пользователи получают только свои функции из списка
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/batch/search-by-user-ids:
+    post:
+      tags: [functions]
+      summary: Множественный поиск функций по ID пользователей
+      description: Пользователи могут искать только свои функции
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserIdsRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FunctionDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ========== FUNCTION OPERATIONS ==========
+  /functions/operations/{id1}/{id2}/{operation}:
+    get:
+      tags: [operations]
+      summary: Выполнить операцию над функциями
+      description: |
+        Выполняет математическую операцию над двумя функциями.
+        Поддерживаемые операции: plus, minus, multiply, divide.
+        Функции должны иметь одинаковое количество точек и совпадающие значения X.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id1
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: ID первой функции
+        - name: id2
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: ID второй функции
+        - name: operation
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [plus, minus, multiply, divide]
+          description: Операция для выполнения
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/serialize/{functionId}:
+    get:
+      tags: [functions, operations]
+      summary: Сериализовать функцию
+      description: Сериализует функцию в Base64 строку
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  serializedFunction:
+                    type: string
+                    description: Base64 строка сериализованной функции
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /functions/deserialize:
+    post:
+      tags: [functions, operations]
+      summary: Десериализовать функцию
+      description: Десериализует функцию из Base64 строки
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeserializeRequest'
+      responses:
+        '201':
+          description: Функция успешно десериализована
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  functionId:
+                    type: integer
+                  pointCount:
+                    type: integer
+                  name:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ========== POINTS ==========
+  /points:
+    get:
+      tags: [points]
+      summary: Получить все точки
+      description: Администраторы видят все точки, пользователи - только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: sortField
+          in: query
+          schema:
+            type: string
+            enum: [id, functionId, xvalue, yvalue]
+        - name: ascending
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [points]
+      summary: Создать точку
+      description: Пользователи могут создавать точки только для своих функций
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointCreateRequest'
+      responses:
+        '201':
+          description: Точка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: Точка с такой координатой X уже существует
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/batch:
+    post:
+      tags: [points]
+      summary: Массовое создание точек
+      description: Создает несколько точек для одной функции
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchPointsRequest'
+      responses:
+        '201':
+          description: Точки успешно созданы
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: Точка с такой координатой X уже существует
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/batch/search-by-ids:
+    post:
+      tags: [points]
+      summary: Множественный поиск точек по IDs
+      description: Пользователи получают только свои точки из списка
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdsRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/{pointId}:
+    get:
+      tags: [points]
+      summary: Получить точку по ID
+      description: Пользователи могут получать только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [points]
+      summary: Обновить точку
+      description: Пользователи могут обновлять только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointUpdateRequest'
+      responses:
+        '200':
+          description: Точка успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Точка с такой координатой X уже существует
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [points]
+      summary: Удалить точку
+      description: Пользователи могут удалять только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Точка успешно удалена
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/function/{functionId}:
+    get:
+      tags: [points]
+      summary: Получить точки функции
+      description: Пользователи могут получать только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: sortField
+          in: query
+          schema:
+            type: string
+            enum: [id, functionId, xvalue, yvalue]
+        - name: ascending
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [points]
+      summary: Удалить все точки функции
+      description: Пользователи могут удалять только точки своих функций
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Точки успешно удалены
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/update/batch/{functionId}:
+    put:
+      tags: [points]
+      summary: Массовое обновление точек функции
+      description: Обновляет несколько точек функции одновременно
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePointsBatchRequest'
+      responses:
+        '200':
+          description: Точки успешно обновлены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ========== MATHEMATICAL OPERATIONS ==========
+  /points/generate/{functionType}/{from}/{to}/{count}:
+    get:
+      tags: [operations]
+      summary: Сгенерировать табулированную функцию
+      description: |
+        Генерирует точки для математической функции в указанном диапазоне.
+        Поддерживаемые функции: identity, constant, sqr
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [identity, constant, sqr]
+        - name: from
+          in: path
+          required: true
+          schema:
+            type: number
+            format: double
+          description: Начало диапазона
+        - name: to
+          in: path
+          required: true
+          schema:
+            type: number
+            format: double
+          description: Конец диапазона
+        - name: count
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 2
+          description: Количество точек
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        xvalue:
+                          type: number
+                        yvalue:
+                          type: number
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/differential/{functionId}:
+    get:
+      tags: [operations]
+      summary: Дифференцировать функцию
+      description: Вычисляет производную функции
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dfunctionId:
+                    type: integer
+                  functionId:
+                    type: integer
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        xvalue:
+                          type: number
+                        yvalue:
+                          type: number
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/linear/{functionId}/interpolate/{x}:
+    get:
+      tags: [operations]
+      summary: Линейная интерполяция
+      description: Выполняет линейную интерполяцию функции в точке X
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: x
+          in: path
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  xvalue:
+                    type: number
+                  yvalue:
+                    type: number
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /points/composite/{functionId}/{functionType}/{name}:
+    post:
+      tags: [operations]
+      summary: Создать композитную функцию
+      description: |
+        Создает новую функцию, применяя математическую функцию к значениям Y исходной функции.
+        Поддерживаемые функции: identity, sqr, constant
+      security:
+        - basicAuth: []
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: functionType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [identity, sqr, constant]
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Композитная функция успешно создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  initFunctionId:
+                    type: integer
+                  functionId:
+                    type: integer
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        xvalue:
+                          type: number
+                        yvalue:
+                          type: number
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Базовая HTTP аутентификация
+
   schemas:
-    # ========== BASE SCHEMAS ==========
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "john_doe"
+        passwordHash:
+          type: string
+          example: "hashed_password"
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    UserCreateRequest:
+      type: object
+      required: [username, passwordHash, role]
+      properties:
+        username:
+          type: string
+          pattern: '^[a-zA-Z0-9_]{3,20}$'
+          example: "john_doe"
+        passwordHash:
+          type: string
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,32}$'
+          example: "Password123"
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          pattern: '^[a-zA-Z0-9_]{3,20}$'
+          example: "john_doe_updated"
+        passwordHash:
+          type: string
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,32}$'
+          example: "NewPassword123"
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+
+    FunctionDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Моя функция"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    FunctionCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: "Новая функция"
+
+    FunctionUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: "Обновленное имя функции"
+
+    PointDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        functionId:
+          type: integer
+          example: 1
+        xValue:
+          type: number
+          format: double
+          example: 1.5
+        yValue:
+          type: number
+          format: double
+          example: 2.25
+
+    PointCreateRequest:
+      type: object
+      required: [functionId, xValue, yValue]
+      properties:
+        functionId:
+          type: integer
+          minimum: 1
+          example: 1
+        xValue:
+          type: number
+          format: double
+          example: 1.5
+        yValue:
+          type: number
+          format: double
+          example: 2.25
+
+    PointUpdateRequest:
+      type: object
+      properties:
+        xValue:
+          type: number
+          format: double
+          example: 1.7
+        yValue:
+          type: number
+          format: double
+          example: 2.89
+
+    IdsRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          minItems: 1
+          example: [1, 2, 3]
+
+    UserIdsRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          minItems: 1
+          example: [1, 2, 3]
+
+    BatchPointsRequest:
+      type: object
+      required: [functionId, points]
+      properties:
+        functionId:
+          type: integer
+          minimum: 1
+          example: 1
+        points:
+          type: array
+          items:
+            type: object
+            properties:
+              xValue:
+                type: number
+                format: double
+              yValue:
+                type: number
+                format: double
+          minItems: 1
+
+    UpdatePointsBatchRequest:
+      type: object
+      required: [functionId, points]
+      properties:
+        functionId:
+          type: integer
+          minimum: 1
+        points:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                minimum: 1
+              xValue:
+                type: number
+                format: double
+              yValue:
+                type: number
+                format: double
+          minItems: 1
+
+    DeserializeRequest:
+      type: object
+      required: [serializedFunction]
+      properties:
+        serializedFunction:
+          type: string
+          description: Base64 строка сериализованной функции
+
     ErrorResponse:
       type: object
       properties:
         error:
           type: string
-          description: Сообщение об ошибке
+          example: "Сообщение об ошибке"
         timestamp:
           type: string
           format: date-time
-          description: Время возникновения ошибки
         path:
           type: string
-          description: Путь запроса, вызвавшего ошибку
-      required:
-        - error
-        - timestamp
-        - path
-      example:
-        error: "Ресурс не найден"
-        timestamp: "2024-01-15T10:30:00Z"
-        path: "/api/points/999"
+          example: "/users"
 
-    # ========== POINT SCHEMAS ==========
-    Point:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Уникальный идентификатор точки
-          example: 1
-        functionId:
-          type: integer
-          format: int64
-          description: ID функции, к которой принадлежит точка
-          example: 5
-        xValue:
-          type: number
-          format: double
-          description: Координата X точки
-          example: 2.5
-        yValue:
-          type: number
-          format: double
-          description: Координата Y точки
-          example: 6.25
-      required:
-        - id
-        - functionId
-        - xValue
-        - yValue
+  responses:
+    BadRequestError:
+      description: Неверный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Неверный формат ID"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/users/abc"
 
-    PointCreate:
-      type: object
-      properties:
-        functionId:
-          type: integer
-          format: int64
-          description: ID функции, к которой принадлежит точка
-          example: 5
-        xValue:
-          type: number
-          format: double
-          description: Координата X точки
-          example: 2.5
-        yValue:
-          type: number
-          format: double
-          description: Координата Y точки
-          example: 6.25
-      required:
-        - functionId
-        - xValue
-        - yValue
+    UnauthorizedError:
+      description: Требуется аутентификация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
-    PointUpdate:
-      type: object
-      properties:
-        xValue:
-          type: number
-          format: double
-          description: Координата X точки
-          example: 3.0
-        yValue:
-          type: number
-          format: double
-          description: Координата Y точки
-          example: 9.0
-      required:
-        - xValue
-        - yValue
+    ForbiddenError:
+      description: Недостаточно прав
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
-    # ========== FUNCTION SCHEMAS ==========
-    Function:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Уникальный идентификатор функции
-          example: 1
-        userId:
-          type: integer
-          format: int64
-          description: ID пользователя-владельца функции
-          example: 10
-        name:
-          type: string
-          description: Название функции
-          example: "Квадратичная функция"
-        createdAt:
-          type: string
-          format: date-time
-          description: Дата и время создания
-        updatedAt:
-          type: string
-          format: date-time
-          description: Дата и время последнего обновления
-      required:
-        - id
-        - userId
-        - name
-        - createdAt
+    NotFoundError:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
-    FunctionCreate:
-      type: object
-      properties:
-        userId:
-          type: integer
-          format: int64
-          description: ID пользователя-владельца функции
-          example: 10
-        name:
-          type: string
-          description: Название функции
-          example: "Линейная функция"
-      required:
-        - userId
-        - name
-
-    FunctionUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Название функции
-          example: "Обновленное название"
-      required:
-        - name
-
-    # ========== USER SCHEMAS ==========
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Уникальный идентификатор пользователя
-          example: 1
-        username:
-          type: string
-          description: Имя пользователя (логин)
-          example: "ivanov"
-        role:
-          type: string
-          description: Роль пользователя
-          enum: [user, admin]
-          example: "user"
-        createdAt:
-          type: string
-          format: date-time
-          description: Дата и время создания учетной записи
-        passwordHash:
-          type: string
-          description: Хеш пароля (возвращается только при запросе собственного профиля или для админов)
-          example: "$2a$10$..."
-      required:
-        - id
-        - username
-        - role
-        - createdAt
-
-    UserCreate:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Имя пользователя (логин), 3-20 символов, буквы, цифры, подчеркивание
-          example: "newuser"
-        passwordHash:
-          type: string
-          description: Хеш пароля (должен содержать заглавные и строчные буквы, цифры, 8-32 символа)
-          example: "SecurePass123"
-        role:
-          type: string
-          description: Роль пользователя
-          enum: [user, admin]
-          default: "user"
-          example: "user"
-      required:
-        - username
-        - passwordHash
-
-    UserUpdate:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Имя пользователя (логин)
-          example: "updated_user"
-        passwordHash:
-          type: string
-          description: Новый хеш пароля
-          example: "NewSecurePass456"
-        role:
-          type: string
-          description: Роль пользователя
-          enum: [user, admin]
-          example: "admin"
-      required:
-        - username
-
-  # ========== SECURITY SCHEMES ==========
-  securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
-      description: Базовая HTTP аутентификация
-
-
-# Глобальные требования безопасности
-security:
-  - BasicAuth: []
+    ServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

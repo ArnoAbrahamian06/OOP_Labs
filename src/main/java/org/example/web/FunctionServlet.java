@@ -1,103 +1,1060 @@
 package org.example.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.example.auth.AuthorizationService;
+import org.example.DTO.FunctionDTO;
+import org.example.DTO.PointDTO;
+import org.example.DTO.UserIdsRequest;
+import org.example.exceptions.InconsistentFunctionsException;
+import org.example.functions.*;
+import org.example.functions.factory.ArrayTabulatedFunctionFactory;
+import org.example.functions.factory.TabulatedFunctionFactory;
+import org.example.io.FunctionsIO;
 import org.example.DAO.FunctionDAO;
+import org.example.DAO.PointDAO;
+import org.example.mapper.FunctionMapper;
+import org.example.mapper.PointMapper;
 import org.example.models.Function;
+import org.example.models.Point;
+import org.example.models.User;
+import org.example.operations.TabulatedFunctionOperationService;
 
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@WebServlet("/api/functions/*")
-public class FunctionServlet extends HttpServlet {
-
+@WebServlet("/functions/*")
+public class FunctionServlet extends BaseServlet {
+    private static final Logger logger = LoggerFactory.getLogger(FunctionServlet.class);
     private final FunctionDAO functionDAO = new FunctionDAO();
-    private final ObjectMapper objectMapper;
-
-    public FunctionServlet() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
-        this.objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+    private final PointDAO pointDAO = new PointDAO(); // Инициализируем PointDAO
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        String pathInfo = req.getPathInfo();
-
-        if (pathInfo == null || pathInfo.equals("/")) {
-            // GET /api/functions — все функции
-            List<Function> functions = functionDAO.findAll();
-            resp.getWriter().write(objectMapper.writeValueAsString(functions));
-        } else {
-            // GET /api/functions/{id}
-            try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-                var functionOpt = functionDAO.findById(id);
-                if (functionOpt.isPresent()) {
-                    resp.getWriter().write(objectMapper.writeValueAsString(functionOpt.get()));
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                }
-            } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        logRequest(req);
+        long startTime = System.currentTimeMillis();
+        try {
+            // Проверка аутентификации для всех GET запросов
+            if (!checkAccess(req, resp, null, null)) {
+                return;
             }
+
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null || pathInfo.equals("/")) {
+                handleGetAllFunctions(req, resp);
+            } else if (pathInfo.matches("/\\d+")) {
+                handleGetFunctionById(pathInfo.substring(1), req, resp);
+            } else if (pathInfo.equals("/search")) {
+                handleSearchFunctions(req, resp);
+            }
+              else if (pathInfo.startsWith("/search/by-name/")) {
+                handleSearchByName(pathInfo.substring("/search/by-name/".length()), req, resp);
+            } else if (pathInfo.startsWith("/search/by-user/")) {
+                handleSearchByUserId(pathInfo.substring("/search/by-user/".length()), req, resp);
+            } else if (pathInfo.equals("/search/by-user-and-name")) {
+                handleSearchByUserAndName(req, resp);
+            } else if (pathInfo.startsWith("/users/") && pathInfo.endsWith("/count")) {
+                handleGetFunctionCountForUser(pathInfo, req, resp);
+            } else if (pathInfo.equals("/exists")) {
+                handleCheckFunctionExists(req, resp);
+            } else if (pathInfo.startsWith("/operations/")) {
+                handleFunctionOperations(pathInfo.substring("/operations/".length()), req, resp);
+            } else if (pathInfo.startsWith("/serialize/")) {
+                handleSerializeFunction(pathInfo.substring("/serialize/".length()), req, resp);
+            } else {
+                handleError(resp, 400, "Неверный путь", req.getRequestURI());
+            }
+            long executionTime = System.currentTimeMillis() - startTime;
+            logger.info("GET запрос обработан за {} мс", executionTime);
+        } catch (Exception e) {
+            logger.error("Ошибка при обработке GET запроса: {}", e.getMessage(), e);
+            handleError(resp, 500, "Внутренняя ошибка сервера", req.getRequestURI());
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Function function = objectMapper.readValue(req.getInputStream(), Function.class);
-        Function saved = functionDAO.insert(function);
-        if (saved != null && saved.getId() != null) {
-            resp.setStatus(HttpServletResponse.SC_CREATED);
-            resp.getWriter().write(objectMapper.writeValueAsString(saved));
-        } else {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        logRequest(req);
+        long startTime = System.currentTimeMillis();
+        try {
+            // Проверка аутентификации для всех POST запросов
+            if (!checkAccess(req, resp, null, null)) {
+                return;
+            }
+
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null || pathInfo.equals("/") || pathInfo.equals("")) {
+                handleCreateFunction(req, resp);
+            } else if (pathInfo != null && pathInfo.equals("/deserialize")) {
+                handleDeserializeFunction(req, resp);
+            } else if (pathInfo.equals("/batch/search-by-ids")) {
+                handleBatchSearchByIds(req, resp);
+            } else if (pathInfo.equals("/batch/search-by-user-ids")) {
+                handleBatchSearchByUserIds(req, resp);
+            } else {
+                handleError(resp, 400, "Неверный путь", req.getRequestURI());
+            }
+            long executionTime = System.currentTimeMillis() - startTime;
+            logger.info("POST запрос обработан за {} мс", executionTime);
+        } catch (Exception e) {
+            logger.error("Ошибка при обработке POST запроса: {}", e.getMessage(), e);
+            handleError(resp, 500, "Внутренняя ошибка сервера", req.getRequestURI());
         }
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.length() <= 1) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
+        logRequest(req);
+        long startTime = System.currentTimeMillis();
         try {
-            int id = Integer.parseInt(pathInfo.substring(1));
-            Function function = objectMapper.readValue(req.getInputStream(), Function.class);
-            function.setId(id);
-            if (functionDAO.update(function)) {
-                resp.setStatus(HttpServletResponse.SC_OK);
-            } else {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            // Проверка аутентификации для всех PUT запросов
+            if (!checkAccess(req, resp, null, null)) {
+                return;
             }
+
+            String pathInfo = req.getPathInfo();
+            if (pathInfo != null && pathInfo.matches("/\\d+")) {
+                handleUpdateFunction(pathInfo.substring(1), req, resp);
+            } else if (pathInfo != null && pathInfo.matches("/\\d+/signature")) {
+                handleUpdateSignature(pathInfo.substring(1, pathInfo.lastIndexOf('/')), req, resp);
+            } else {
+                handleError(resp, 400, "Неверный путь", req.getRequestURI());
+            }
+            long executionTime = System.currentTimeMillis() - startTime;
+            logger.info("PUT/PATCH запрос обработан за {} мс", executionTime);
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Ошибка при обработке PUT/PATCH запроса: {}", e.getMessage(), e);
+            handleError(resp, 500, "Внутренняя ошибка сервера", req.getRequestURI());
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.length() <= 1) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        logRequest(req);
+        long startTime = System.currentTimeMillis();
+        try {
+            // Проверка аутентификации для всех DELETE запросов
+            if (!checkAccess(req, resp, null, null)) {
+                return;
+            }
+
+            String pathInfo = req.getPathInfo();
+            if (pathInfo != null && pathInfo.matches("/\\d+")) {
+                handleDeleteFunctionById(pathInfo.substring(1), req, resp);
+            } else if (pathInfo != null && pathInfo.startsWith("/search/by-user/")) {
+                handleDeleteFunctionsByUserId(pathInfo.substring("/search/by-user/".length()), req, resp);
+            } else {
+                handleError(resp, 400, "Неверный путь", req.getRequestURI());
+            }
+            long executionTime = System.currentTimeMillis() - startTime;
+            logger.info("DELETE запрос обработан за {} мс", executionTime);
+        } catch (Exception e) {
+            logger.error("Ошибка при обработке DELETE запроса: {}", e.getMessage(), e);
+            handleError(resp, 500, "Внутренняя ошибка сервера", req.getRequestURI());
+        }
+    }
+
+    private void handleGetAllFunctions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Получение списка всех функций");
+        String sortField = req.getParameter("sortField");
+        boolean ascending = getBooleanParam(req, "ascending", true);
+
+        List<Function> functions;
+        User currentUser = AuthorizationService.getCurrentUser(req);
+
+        if (AuthorizationService.isAdmin(req)) {
+            functions = functionDAO.findAll();
+            logger.info("Администратор {} запросил список всех функций", currentUser.getUsername());
+        } else {
+            // Обычные пользователи видят только свои функции
+            functions = functionDAO.findByUserId(currentUser.getId());
+            logger.info("Пользователь {} запросил список своих функций", currentUser.getUsername());
+        }
+
+        logger.debug("Получено {} функций из базы данных", functions.size());
+        List<FunctionDTO> functionDTOs = functions.stream()
+                .map(FunctionMapper::toDTO)
+                .collect(Collectors.toList());
+        SortingUtils.sortFunctions(functionDTOs, sortField, ascending);
+        writeJson(resp, 200, functionDTOs);
+        logger.info("Отправлен список функций. Количество: {}", functionDTOs.size());
+    }
+
+    private void handleGetFunctionById(String idStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Получение функции по ID: {}", idStr);
+        try {
+            int id = Integer.parseInt(idStr);
+            ValidationUtils.validateId(id, "функция");
+
+            Optional<Function> functionOpt = functionDAO.findById(id);
+            if (!functionOpt.isPresent()) {
+                logger.warn("Функция не найдена по ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id);
+                return;
+            }
+
+            Function function = functionOpt.get();
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав доступа
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function.getUserId())) {
+                logger.warn("Пользователь {} пытается получить доступ к функции другого пользователя (ID: {})",
+                        currentUser.getUsername(), function.getUserId());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для доступа к этой функции");
+                return;
+            }
+
+            FunctionDTO functionDTO = FunctionMapper.toDTO(function);
+            writeJson(resp, 200, functionDTO);
+            logger.info("Найдена функция по ID: {}", id);
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID: {}", idStr, e);
+            handleError(resp, 400, "Неверный формат ID", "/functions/" + idStr);
+        }
+    }
+
+    private void handleSearchFunctions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Расширенный поиск функций");
+        Integer userId = getIntegerParam(req, "userId");
+        String namePattern = req.getParameter("namePattern");
+        String sortField = req.getParameter("sortField");
+        boolean ascending = getBooleanParam(req, "ascending", true);
+
+        User currentUser = AuthorizationService.getCurrentUser(req);
+
+        List<Function> functions;
+        if (userId != null && namePattern != null) {
+            if (AuthorizationService.isAdmin(req) || currentUser.getId().equals(userId)) {
+                functions = functionDAO.findByNameAndUserId(namePattern, userId);
+                logger.debug("Найдено {} функций по имени '{}' и пользователю ID {}", functions.size(), namePattern, userId);
+            } else {
+                logger.warn("Пользователь {} пытается найти функции другого пользователя (ID: {})",
+                        currentUser.getUsername(), userId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для поиска функций другого пользователя");
+                return;
+            }
+        } else if (userId != null) {
+            if (AuthorizationService.isAdmin(req) || currentUser.getId().equals(userId)) {
+                functions = functionDAO.findByUserId(userId);
+                logger.debug("Найдено {} функций для пользователя ID {}", functions.size(), userId);
+            } else {
+                logger.warn("Пользователь {} пытается найти функции другого пользователя (ID: {})",
+                        currentUser.getUsername(), userId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для поиска функций другого пользователя");
+                return;
+            }
+        } else if (namePattern != null) {
+            if (AuthorizationService.isAdmin(req)) {
+                functions = functionDAO.findByName(namePattern);
+                logger.debug("Найдено {} функций по имени '{}'", functions.size(), namePattern);
+            } else {
+                // Обычные пользователи ищут только среди своих функций
+                functions = functionDAO.findByCriteria(currentUser.getId(), namePattern, "id", true);
+                logger.debug("Найдено {} функций по имени '{}' для пользователя {}", functions.size(), namePattern, currentUser.getId());
+            }
+        } else {
+            if (AuthorizationService.isAdmin(req)) {
+                functions = functionDAO.findAll();
+                logger.debug("Найдено {} функций при общем поиске администратором", functions.size());
+            } else {
+                // Обычные пользователи видят только свои функции
+                functions = functionDAO.findByUserId(currentUser.getId());
+                logger.debug("Найдено {} функций при общем поиске для пользователя {}", functions.size(), currentUser.getId());
+            }
+        }
+
+        List<FunctionDTO> functionDTOs = functions.stream()
+                .map(FunctionMapper::toDTO)
+                .collect(Collectors.toList());
+        SortingUtils.sortFunctions(functionDTOs, sortField, ascending);
+        writeJson(resp, 200, functionDTOs);
+        logger.info("Отправлен результат расширенного поиска. Количество: {}", functionDTOs.size());
+    }
+
+    private void handleSearchByName(String name, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Поиск функций по имени: {}", name);
+        if (name == null || name.trim().isEmpty()) {
+            logger.error("Имя функции не может быть пустым");
+            handleError(resp, 400, "Имя функции не может быть пустым", "/functions/search/by-name/" + name);
             return;
         }
+
+        String sortField = req.getParameter("sortField");
+        boolean ascending = getBooleanParam(req, "ascending", true);
+
+        List<Function> functions;
+        User currentUser = AuthorizationService.getCurrentUser(req);
+
+        if (AuthorizationService.isAdmin(req)) {
+            functions = functionDAO.findByName(name);
+            logger.debug("Найдено {} функций по имени '{}' администратором", functions.size(), name);
+        } else {
+            // Обычные пользователи ищут только среди своих функций
+            functions = functionDAO.findByNameAndUserId(name, currentUser.getId());
+            logger.debug("Найдено {} функций по имени '{}' для пользователя {}", functions.size(), name, currentUser.getId());
+        }
+
+        List<FunctionDTO> functionDTOs = functions.stream()
+                .map(FunctionMapper::toDTO)
+                .collect(Collectors.toList());
+        SortingUtils.sortFunctions(functionDTOs, sortField, ascending);
+        writeJson(resp, 200, functionDTOs);
+        logger.info("Отправлен список функций по имени '{}'. Количество: {}", name, functionDTOs.size());
+    }
+
+    private void handleSearchByUserId(String userIdStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Поиск функций по ID пользователя: {}", userIdStr);
         try {
-            int id = Integer.parseInt(pathInfo.substring(1));
-            if (functionDAO.delete(id)) {
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            int userId = Integer.parseInt(userIdStr);
+            ValidationUtils.validateId(userId, "пользователь");
+            String sortField = req.getParameter("sortField");
+            boolean ascending = getBooleanParam(req, "ascending", true);
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав доступа
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(userId)) {
+                logger.warn("Пользователь {} пытается найти функции другого пользователя с ID {}",
+                        currentUser.getUsername(), userId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для поиска функций другого пользователя");
+                return;
+            }
+
+            List<Function> functions = functionDAO.findByUserId(userId);
+            logger.debug("Найдено {} функций для пользователя ID {}", functions.size(), userId);
+            List<FunctionDTO> functionDTOs = functions.stream()
+                    .map(FunctionMapper::toDTO)
+                    .collect(Collectors.toList());
+            SortingUtils.sortFunctions(functionDTOs, sortField, ascending);
+            writeJson(resp, 200, functionDTOs);
+            logger.info("Отправлен список функций для пользователя ID {}. Количество: {}", userId, functionDTOs.size());
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID пользователя: {}", userIdStr, e);
+            handleError(resp, 400, "Неверный формат ID пользователя", "/functions/search/by-user/" + userIdStr);
+        }
+    }
+
+    private void handleSearchByUserAndName(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Поиск функций по имени и ID пользователя");
+        Integer userId = getIntegerParam(req, "userId");
+        String name = req.getParameter("name");
+        if (userId == null || userId <= 0) {
+            logger.error("Неверный ID пользователя для поиска");
+            handleError(resp, 400, "ID пользователя обязателен и должен быть положительным", "/functions/search/by-user-and-name");
+            return;
+        }
+        if (name == null || name.trim().isEmpty()) {
+            logger.error("Имя функции не может быть пустым");
+            handleError(resp, 400, "Имя функции не может быть пустым", "/functions/search/by-user-and-name");
+            return;
+        }
+
+        User currentUser = AuthorizationService.getCurrentUser(req);
+
+        // Проверка прав доступа
+        if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(userId)) {
+            logger.warn("Пользователь {} пытается найти функции другого пользователя с ID {}",
+                    currentUser.getUsername(), userId);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для поиска функций другого пользователя");
+            return;
+        }
+
+        List<Function> functions = functionDAO.findByNameAndUserId(name, userId);
+        logger.debug("Найдено {} функций по имени '{}' и пользователю ID {}", functions.size(), name, userId);
+        List<FunctionDTO> functionDTOs = functions.stream()
+                .map(FunctionMapper::toDTO)
+                .collect(Collectors.toList());
+        writeJson(resp, 200, functionDTOs);
+        logger.info("Отправлен результат поиска функций по имени '{}' и пользователю ID {}. Количество: {}", name, userId, functionDTOs.size());
+    }
+
+    private void handleGetFunctionCountForUser(String pathInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Получение количества функций для пользователя");
+        try {
+            String userIdStr = pathInfo.substring("/users/".length(), pathInfo.length() - "/count".length());
+            int userId = Integer.parseInt(userIdStr);
+            ValidationUtils.validateId(userId, "пользователь");
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав доступа
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(userId)) {
+                logger.warn("Пользователь {} пытается получить количество функций другого пользователя с ID {}",
+                        currentUser.getUsername(), userId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для получения количества функций другого пользователя");
+                return;
+            }
+
+            int count = functionDAO.countByUserId(userId);
+            logger.info("Найдено {} функций для пользователя ID {}", count, userId);
+            writeJson(resp, 200, Map.of("count", count));
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID пользователя в пути: {}", pathInfo, e);
+            handleError(resp, 400, "Неверный формат ID пользователя", "/functions" + pathInfo);
+        }
+    }
+
+    private void handleCheckFunctionExists(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Проверка существования функции");
+        Integer userId = getIntegerParam(req, "userId");
+        String name = req.getParameter("name");
+        if (userId == null || userId <= 0) {
+            logger.error("Неверный ID пользователя для проверки существования функции");
+            handleError(resp, 400, "ID пользователя обязателен и должен быть положительным", "/functions/exists");
+            return;
+        }
+        if (name == null || name.trim().isEmpty()) {
+            logger.error("Имя функции не может быть пустым");
+            handleError(resp, 400, "Имя функции не может быть пустым", "/functions/exists");
+            return;
+        }
+
+        User currentUser = AuthorizationService.getCurrentUser(req);
+
+        // Проверка прав доступа
+        if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(userId)) {
+            logger.warn("Пользователь {} пытается проверить существование функции другого пользователя с ID {}",
+                    currentUser.getUsername(), userId);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для проверки существования функции другого пользователя");
+            return;
+        }
+
+        boolean exists = functionDAO.existsByNameAndUserId(name, userId);
+        logger.info("Функция с именем '{}' для пользователя ID {} {}: {}", name, userId, exists ? "существует" : "не существует", exists);
+        writeJson(resp, 200, Map.of("exists", exists));
+    }
+
+    private void handleCreateFunction(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Создание новой функции");
+        try {
+            FunctionDTO functionDTO = objectMapper.readValue(req.getInputStream(), FunctionDTO.class);
+            logger.debug("Получены данные для создания функции: {}", functionDTO);
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+            functionDTO.setUserId(currentUser.getId()); // Принудительно устанавливаем ID текущего пользователя
+
+            ValidationUtils.validateFunctionDTO(functionDTO);
+            Function function = FunctionMapper.toEntity(functionDTO);
+
+            Function savedFunction = functionDAO.insert(function);
+            if (savedFunction != null && savedFunction.getId() != null) {
+                FunctionDTO savedFunctionDTO = FunctionMapper.toDTO(savedFunction);
+                writeJson(resp, 201, savedFunctionDTO);
+                logger.info("Пользователь {} создал новую функцию (ID: {})",
+                        currentUser.getUsername(), savedFunction.getId());
             } else {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                logger.error("Не удалось создать функцию");
+                handleError(resp, 400, "Не удалось создать функцию", "/functions");
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка валидации при создании функции: {}", e.getMessage());
+            handleError(resp, 400, e.getMessage(), "/functions");
+        } catch (Exception e) {
+            logger.error("Ошибка при создании функции: {}", e.getMessage(), e);
+            handleError(resp, 500, "Ошибка при создании функции", "/functions");
+        }
+    }
+
+    private void handleBatchSearchByIds(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Множественный поиск функций по IDs");
+        try {
+            IdsRequest request = objectMapper.readValue(req.getInputStream(), IdsRequest.class);
+            logger.debug("Получены ID для поиска: {}", request.getIds());
+            ValidationUtils.validateIds(request.getIds(), "функция");
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Получаем все функции по ID
+            List<Function> allFunctions = functionDAO.findByIds(request.getIds());
+
+            // Фильтруем функции, к которым у пользователя есть доступ
+            List<Function> accessibleFunctions = allFunctions.stream()
+                    .filter(function -> AuthorizationService.isAdmin(req) ||
+                            currentUser.getId().equals(function.getUserId()))
+                    .collect(Collectors.toList());
+
+            // Создаем DTO только для доступных функций
+            List<FunctionDTO> result = accessibleFunctions.stream()
+                    .map(FunctionMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            // Логируем результат
+            if (allFunctions.size() != accessibleFunctions.size()) {
+                logger.warn("Доступны только {} из {} запрошенных функций для пользователя {}",
+                        accessibleFunctions.size(), allFunctions.size(), currentUser.getUsername());
+            }
+
+            writeJson(resp, 200, result);
+            logger.info("Отправлено {} функций из {} запрошенных для пользователя {}",
+                    result.size(), request.getIds().size(), currentUser.getUsername());
+        } catch (Exception e) {
+            logger.error("Ошибка при множественном поиске функций: {}", e.getMessage(), e);
+            handleError(resp, 400, "Ошибка при поиске функций", "/functions/batch/search-by-ids");
+        }
+    }
+
+    private void handleBatchSearchByUserIds(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Множественный поиск функций по ID пользователей");
+        try {
+            UserIdsRequest request = objectMapper.readValue(req.getInputStream(), UserIdsRequest.class);
+            logger.debug("Получены ID пользователей для поиска: {}", request.getIds());
+            ValidationUtils.validateIds(request.getIds(), "пользователь");
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            if (!AuthorizationService.isAdmin(req)) {
+                // Обычные пользователи могут искать функции только для себя
+                if (!request.getIds().contains(currentUser.getId())) {
+                    logger.warn("Пользователь {} пытается найти функции других пользователей", currentUser.getUsername());
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для поиска функций других пользователей");
+                    return;
+                }
+                // Оставляем только ID текущего пользователя
+                request.getIds().retainAll(Collections.singletonList(currentUser.getId()));
+            }
+
+            List<Function> functions = new ArrayList<>();
+            for (Integer userId : request.getIds()) {
+                functions.addAll(functionDAO.findByUserId(userId));
+            }
+
+            List<FunctionDTO> result = functions.stream()
+                    .map(FunctionMapper::toDTO)
+                    .collect(Collectors.toList());
+            writeJson(resp, 200, result);
+            logger.info("Найдено {} функций для {} пользователей", result.size(), request.getIds().size());
+        } catch (Exception e) {
+            logger.error("Ошибка при множественном поиске функций по ID пользователей: {}", e.getMessage(), e);
+            handleError(resp, 400, "Ошибка при поиске функций", "/functions/batch/search-by-user-ids");
+        }
+    }
+
+    private void handleUpdateFunction(String idStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Обновление функции с ID: {}", idStr);
+        try {
+            int id = Integer.parseInt(idStr);
+            ValidationUtils.validateId(id, "функция");
+
+            Optional<Function> functionOpt = functionDAO.findById(id);
+            if (!functionOpt.isPresent()) {
+                logger.warn("Функция не найдена для обновления с ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id);
+                return;
+            }
+
+            Function existingFunction = functionOpt.get();
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав на обновление
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(existingFunction.getUserId())) {
+                logger.warn("Пользователь {} пытается обновить функцию другого пользователя (ID: {})",
+                        currentUser.getUsername(), existingFunction.getUserId());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для обновления этой функции");
+                return;
+            }
+
+            FunctionDTO functionDTO = objectMapper.readValue(req.getInputStream(), FunctionDTO.class);
+            logger.debug("Получены данные для обновления функции ID {}: {}", id, functionDTO);
+            functionDTO.setId(id); // Устанавливаем ID из пути
+            functionDTO.setUserId(existingFunction.getUserId()); // Сохраняем оригинальный ID пользователя
+
+            ValidationUtils.validateFunctionDTO(functionDTO);
+            Function function = FunctionMapper.toEntity(functionDTO);
+
+            if (functionDAO.update(function)) {
+                writeJson(resp, 200, functionDTO);
+                logger.info("Функция с ID {} успешно обновлена пользователем {}",
+                        id, currentUser.getUsername());
+            } else {
+                logger.warn("Функция не найдена для обновления с ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id);
             }
         } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Неверный формат ID: {}", idStr, e);
+            handleError(resp, 400, "Неверный формат ID", "/functions/" + idStr);
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка валидации при обновлении функции: {}", e.getMessage());
+            handleError(resp, 400, e.getMessage(), "/api/functions/" + idStr);
+        } catch (Exception e) {
+            logger.error("Ошибка при обновлении функции с ID {}: {}", idStr, e.getMessage(), e);
+            handleError(resp, 500, "Ошибка при обновлении функции", "/api/functions/" + idStr);
+        }
+    }
+
+    private void handleUpdateSignature(String idStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Обновление сигнатуры функции с ID: {}", idStr);
+        try {
+            int id = Integer.parseInt(idStr);
+            ValidationUtils.validateId(id, "функция");
+
+            Optional<Function> functionOpt = functionDAO.findById(id);
+            if (!functionOpt.isPresent()) {
+                logger.warn("Функция не найдена для обновления сигнатуры с ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id + "/signature");
+                return;
+            }
+
+            Function function = functionOpt.get();
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав на обновление
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function.getUserId())) {
+                logger.warn("Пользователь {} пытается обновить сигнатуру функции другого пользователя (ID: {})",
+                        currentUser.getUsername(), function.getUserId());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для обновления сигнатуры этой функции");
+                return;
+            }
+
+            SignatureUpdateRequest request = objectMapper.readValue(req.getInputStream(), SignatureUpdateRequest.class);
+            if (request.getSignature() == null || request.getSignature().trim().isEmpty()) {
+                logger.error("Сигнатура не может быть пустой");
+                handleError(resp, 400, "Сигнатура не может быть пустой", "/api/functions/" + id + "/signature");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID: {}", idStr, e);
+            handleError(resp, 400, "Неверный формат ID", "/api/functions/" + idStr + "/signature");
+        } catch (Exception e) {
+            logger.error("Ошибка при обновлении сигнатуры функции с ID {}: {}", idStr, e.getMessage(), e);
+            handleError(resp, 500, "Ошибка при обновлении сигнатуры функции", "/api/functions/" + idStr + "/signature");
+        }
+    }
+
+    private void handleDeleteFunctionById(String idStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Удаление функции по ID: {}", idStr);
+        try {
+            int id = Integer.parseInt(idStr);
+            ValidationUtils.validateId(id, "функция");
+
+            Optional<Function> functionOpt = functionDAO.findById(id);
+            if (!functionOpt.isPresent()) {
+                logger.warn("Функция не найдена для удаления с ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id);
+                return;
+            }
+
+            Function function = functionOpt.get();
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав на удаление
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function.getUserId())) {
+                logger.warn("Пользователь {} пытается удалить функцию другого пользователя (ID: {})",
+                        currentUser.getUsername(), function.getUserId());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для удаления этой функции");
+                return;
+            }
+
+            if (functionDAO.delete(id)) {
+                resp.setStatus(204); // No Content
+                logger.info("Функция с ID {} успешно удалена пользователем {}",
+                        id, currentUser.getUsername());
+            } else {
+                logger.warn("Функция не найдена для удаления с ID: {}", id);
+                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id);
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID: {}", idStr, e);
+            handleError(resp, 400, "Неверный формат ID", "/api/functions/" + idStr);
+        } catch (Exception e) {
+            logger.error("Ошибка при удалении функции с ID {}: {}", idStr, e.getMessage(), e);
+            handleError(resp, 500, "Ошибка при удалении функции", "/api/functions/" + idStr);
+        }
+    }
+
+    private void handleDeleteFunctionsByUserId(String userIdStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.debug("Удаление всех функций пользователя с ID: {}", userIdStr);
+        try {
+            int userId = Integer.parseInt(userIdStr);
+            ValidationUtils.validateId(userId, "пользователь");
+
+            User currentUser = AuthorizationService.getCurrentUser(req);
+
+            // Проверка прав на удаление
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(userId)) {
+                logger.warn("Пользователь {} пытается удалить функции другого пользователя (ID: {})",
+                        currentUser.getUsername(), userId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Недостаточно прав для удаления функций другого пользователя");
+                return;
+            }
+
+            if (functionDAO.deleteByUserId(userId)) {
+                resp.setStatus(204); // No Content
+                logger.info("Все функции пользователя с ID {} успешно удалены пользователем {}",
+                        userId, currentUser.getUsername());
+            } else {
+                logger.error("Не удалось удалить функции пользователя с ID {}", userId);
+                handleError(resp, 500, "Ошибка при удалении функций пользователя", "/api/functions/search/by-user/" + userId);
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID пользователя: {}", userIdStr, e);
+            handleError(resp, 400, "Неверный формат ID пользователя", "/api/functions/search/by-user/" + userIdStr);
+        } catch (Exception e) {
+            logger.error("Ошибка при удалении функций пользователя с ID {}: {}", userIdStr, e.getMessage(), e);
+            handleError(resp, 500, "Ошибка при удалении функций пользователя", "/api/functions/search/by-user/" + userIdStr);
+        }
+    }
+
+    // Вспомогательные классы для обработки запросов
+    private static class IdsRequest {
+        private List<Integer> ids;
+        public List<Integer> getIds() {
+            return ids;
+        }
+        public void setIds(List<Integer> ids) {
+            this.ids = ids;
+        }
+    }
+
+    private static class SignatureUpdateRequest {
+        private String signature;
+        public String getSignature() {
+            return signature;
+        }
+        public void setSignature(String signature) {
+            this.signature = signature;
+        }
+    }
+    // Новый метод для обработки операций над функциями
+    private void handleFunctionOperations(String pathSuffix, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("Запрос на выполнение операции над функциями: {}", pathSuffix);
+
+        // Разбираем путь: id1/id2/operation
+        String[] parts = pathSuffix.split("/");
+        if (parts.length != 3) {
+            handleError(resp, 400, "Неверный формат пути для операции", "/api/functions/operations/" + pathSuffix);
+            return;
+        }
+
+        try {
+            int id1 = Integer.parseInt(parts[0]);
+            int id2 = Integer.parseInt(parts[1]);
+            String operation = parts[2];
+
+            // Проверка существования функций
+            Optional<Function> function1Opt = functionDAO.findById(id1);
+            Optional<Function> function2Opt = functionDAO.findById(id2);
+
+            if (!function1Opt.isPresent() || !function2Opt.isPresent()) {
+                logger.warn("Функция с ID {} или {} не найдена", id1, id2);
+                handleError(resp, 404, "Одна из функций не найдена", "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                return;
+            }
+
+            Function function1 = function1Opt.get();
+            Function function2 = function2Opt.get();
+
+            // Проверка прав доступа
+            User currentUser = AuthorizationService.getCurrentUser(req);
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function1.getUserId())) {
+                logger.warn("Пользователь {} пытается получить доступ к чужой функции {}",
+                        currentUser.getUsername(), id1);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен к функции " + id1);
+                return;
+            }
+
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function2.getUserId())) {
+                logger.warn("Пользователь {} пытается получить доступ к чужой функции {}",
+                        currentUser.getUsername(), id2);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен к функции " + id2);
+                return;
+            }
+
+            // Получаем точки функций, отсортированные по X
+            List<Point> points1 = pointDAO.findByFunctionId(id1);
+            List<Point> points2 = pointDAO.findByFunctionId(id2);
+
+            // Сортируем по X
+            points1.sort(Comparator.comparingDouble(Point::getXValue));
+            points2.sort(Comparator.comparingDouble(Point::getXValue));
+
+            // Проверяем соответствие точек
+            if (points1.size() != points2.size()) {
+                handleError(resp, 400, "Функции имеют разное количество точек",
+                        "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                return;
+            }
+
+            // Проверяем совпадение значений X
+            for (int i = 0; i < points1.size(); i++) {
+                if (Math.abs(points1.get(i).getXValue() - points2.get(i).getXValue()) > 1e-9) {
+                    handleError(resp, 400, String.format("Несовпадение значений X на позиции %d: %f vs %f",
+                                    i, points1.get(i).getXValue(), points2.get(i).getXValue()),
+                            "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                    return;
+                }
+            }
+
+            // Преобразуем точки в массивы
+            double[] xValues = points1.stream().mapToDouble(Point::getXValue).toArray();
+            double[] yValues1 = points1.stream().mapToDouble(Point::getYValue).toArray();
+            double[] yValues2 = points2.stream().mapToDouble(Point::getYValue).toArray();
+
+            // Создаем табулированные функции
+            TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();
+            TabulatedFunction func1 = factory.create(xValues, yValues1);
+            TabulatedFunction func2 = factory.create(xValues, yValues2);
+
+            // Создаем сервис операций
+            TabulatedFunctionOperationService operationService = new TabulatedFunctionOperationService(factory);
+            TabulatedFunction resultFunction;
+
+            // Выполняем операцию
+            switch (operation.toLowerCase()) {
+                case "plus":
+                    resultFunction = operationService.add(func1, func2);
+                    break;
+                case "minus":
+                    resultFunction = operationService.subtract(func1, func2);
+                    break;
+                case "multiply":
+                    resultFunction = operationService.multiply(func1, func2);
+                    break;
+                case "divide":
+                    try {
+                        resultFunction = operationService.divide(func1, func2);
+                    } catch (ArithmeticException e) {
+                        handleError(resp, 400, "Деление на ноль в одной из точек",
+                                "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                        return;
+                    }
+                    break;
+                default:
+                    handleError(resp, 400, "Неподдерживаемая операция: " + operation,
+                            "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                    return;
+            }
+
+            org.example.functions.Point[] resultPoints = TabulatedFunctionOperationService.asPoints(resultFunction);
+
+            // Создаем новую функцию для результата
+            Function resultFunctionEntity = new Function();
+            resultFunctionEntity.setUserId(currentUser.getId());
+
+            String operationName;
+            switch (operation.toLowerCase()) {
+                case "plus":
+                    operationName = "Сумма";
+                    break;
+                case "minus":
+                    operationName = "Разность";
+                    break;
+                case "multiply":
+                    operationName = "Произведение";
+                    break;
+                case "divide":
+                    operationName = "Частное";
+                    break;
+                default:
+                    operationName = "Операция";
+            }
+
+            resultFunctionEntity.setName(String.format("%s функций %d и %d", operationName, id1, id2));
+
+            Function savedFunction = functionDAO.insert(resultFunctionEntity);
+            if (savedFunction == null) {
+                logger.error("Не удалось сохранить результирующую функцию");
+                handleError(resp, 500, "Ошибка при сохранении результирующей функции",
+                        "/api/v1/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                return;
+            }
+
+            // Сохраняем точки результата
+            List<Point> pointsToSave = new ArrayList<>();
+            for (org.example.functions.Point point : resultPoints) {
+                Point p = new Point();
+                p.setFunctionId(savedFunction.getId());
+                p.setXValue(point.x);
+                p.setYValue(point.y);
+                pointsToSave.add(p);
+            }
+
+            // Вставляем точки пакетно
+            pointDAO.insertBatch(pointsToSave);
+
+            // Формируем ответ
+            List<PointDTO> response = pointsToSave.stream()
+                    .map(PointMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            writeJson(resp, 200, response);
+            logger.info("Успешно выполнена операция {} над функциями {} и {}", operation, id1, id2);
+
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID: {}", pathSuffix, e);
+            handleError(resp, 400, "Неверный формат ID", "/api/v1/functions/operations/" + pathSuffix);
+        } catch (InconsistentFunctionsException e) {
+            logger.error("Несовместимые функции: {}", e.getMessage(), e);
+            handleError(resp, 400, "Несовместимые функции: " + e.getMessage(),
+                    "/api/v1/functions/operations/" + pathSuffix);
+        } catch (Exception e) {
+            logger.error("Ошибка при выполнении операции: {}", e.getMessage(), e);
+            handleError(resp, 500, "Внутренняя ошибка сервера",
+                    "/api/v1/functions/operations/" + pathSuffix);
+        }
+    }
+
+    // Новый метод для сериализации функции
+    private void handleSerializeFunction(String idStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("Запрос на сериализацию функции с ID: {}", idStr);
+
+        try {
+            int functionId = Integer.parseInt(idStr);
+            ValidationUtils.validateId(functionId, "функция");
+
+            // Проверка существования функции
+            Optional<Function> functionOpt = functionDAO.findById(functionId);
+            if (!functionOpt.isPresent()) {
+                logger.warn("Функция с ID {} не найдена", functionId);
+                handleError(resp, 404, "Функция не найдена", "/api/v1/functions/serialize/" + functionId);
+                return;
+            }
+
+            Function function = functionOpt.get();
+
+            // Проверка прав доступа
+            User currentUser = AuthorizationService.getCurrentUser(req);
+            if (!AuthorizationService.isAdmin(req) && !currentUser.getId().equals(function.getUserId())) {
+                logger.warn("Пользователь {} пытается получить доступ к чужой функции {}",
+                        currentUser.getUsername(), functionId);
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен");
+                return;
+            }
+
+            // Получение точек функции
+            List<Point> points = pointDAO.findByFunctionId(functionId);
+            if (points.isEmpty()) {
+                logger.warn("Функция с ID {} не имеет точек", functionId);
+                handleError(resp, 400, "Функция не содержит точек", "/api/v1/functions/serialize/" + functionId);
+                return;
+            }
+
+            // Сортируем по X
+            points.sort(Comparator.comparingDouble(Point::getXValue));
+
+            // Преобразование точек в массивы
+            double[] xValues = points.stream().mapToDouble(Point::getXValue).toArray();
+            double[] yValues = points.stream().mapToDouble(Point::getYValue).toArray();
+
+            // Создание табулированной функции
+            TabulatedFunction tabulatedFunction = new ArrayTabulatedFunction(xValues, yValues);
+
+            // Сериализация в байтовый массив
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            try (BufferedOutputStream bufferedStream = new BufferedOutputStream(byteStream)) {
+                FunctionsIO.serialize(bufferedStream, tabulatedFunction);
+            }
+
+            // Преобразование в Base64 строку
+            String serializedString = Base64.getEncoder().encodeToString(byteStream.toByteArray());
+            logger.info("Функция с ID {} успешно сериализована в строку длиной {}", functionId, serializedString.length());
+
+            // Отправка результата
+            writeJson(resp, 200, Map.of("serializedFunction", serializedString));
+
+        } catch (NumberFormatException e) {
+            logger.error("Неверный формат ID: {}", idStr, e);
+            handleError(resp, 400, "Неверный формат ID", "/api/v1/functions/serialize/" + idStr);
+        } catch (Exception e) {
+            logger.error("Ошибка при сериализации функции с ID {}: {}", idStr, e.getMessage(), e);
+            handleError(resp, 500, "Ошибка сериализации", "/api/v1/functions/serialize/" + idStr);
+        }
+    }
+
+    // Новый метод для десериализации функции
+    private void handleDeserializeFunction(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        logger.info("Запрос на десериализацию функции");
+
+        try {
+            // Чтение тела запроса
+            DeserializeRequest request = objectMapper.readValue(req.getInputStream(), DeserializeRequest.class);
+            if (request.getSerializedFunction() == null || request.getSerializedFunction().trim().isEmpty()) {
+                logger.warn("Пустая строка для десериализации");
+                handleError(resp, 400, "Пустая строка для десериализации", "/api/v1/functions/deserialize");
+                return;
+            }
+
+            // Декодируем Base64 строку
+            byte[] serializedBytes;
+            try {
+                serializedBytes = Base64.getDecoder().decode(request.getSerializedFunction());
+            } catch (IllegalArgumentException e) {
+                logger.warn("Некорректная Base64 строка: {}", e.getMessage());
+                handleError(resp, 400, "Неверный формат Base64", "/api/v1/functions/deserialize");
+                return;
+            }
+
+            // Десериализуем из байтов
+            TabulatedFunction function;
+            try (BufferedInputStream bufferedStream = new BufferedInputStream(new ByteArrayInputStream(serializedBytes))) {
+                function = FunctionsIO.deserialize(bufferedStream);
+            } catch (ClassNotFoundException e) {
+                logger.error("Не удалось десериализовать: класс не найден", e);
+                handleError(resp, 400, "Несовместимый формат данных", "/api/v1/functions/deserialize");
+                return;
+            } catch (IOException e) {
+                logger.error("Ошибка при десериализации: {}", e.getMessage(), e);
+                handleError(resp, 400, "Повреждённые данные", "/api/v1/functions/deserialize");
+                return;
+            }
+
+            // Сохраняем как новую функцию
+            User currentUser = AuthorizationService.getCurrentUser(req);
+            Function newFunction = new Function();
+            newFunction.setUserId(currentUser.getId());
+            newFunction.setName("Десериализованная функция");
+
+            Function savedFunction = functionDAO.insert(newFunction);
+            if (savedFunction == null) {
+                logger.error("Не удалось сохранить десериализованную функцию");
+                handleError(resp, 500, "Ошибка при сохранении функции", "/api/v1/functions/deserialize");
+                return;
+            }
+
+            // Сохраняем точки
+            List<Point> pointsToSave = new ArrayList<>();
+            for (int i = 0; i < function.getCount(); i++) {
+                Point point = new Point();
+                point.setFunctionId(savedFunction.getId());
+                point.setXValue(function.getX(i));
+                point.setYValue(function.getY(i));
+                pointsToSave.add(point);
+            }
+
+            pointDAO.insertBatch(pointsToSave);
+
+            logger.info("Функция успешно десериализована и сохранена с ID {}", savedFunction.getId());
+
+            // Отправка результата
+            Map<String, Object> response = new HashMap<>();
+            response.put("functionId", savedFunction.getId());
+            response.put("pointCount", function.getCount());
+            response.put("name", newFunction.getName());
+
+            writeJson(resp, 201, response);
+
+        } catch (IOException e) {
+            logger.error("Ошибка при чтении тела запроса: {}", e.getMessage(), e);
+            handleError(resp, 400, "Ошибка при чтении тела запроса", "/api/v1/functions/deserialize");
+        } catch (Exception e) {
+            logger.error("Необработанная ошибка при десериализации: {}", e.getMessage(), e);
+            handleError(resp, 500, "Ошибка сервера при десериализации", "/api/v1/functions/deserialize");
+        }
+    }
+
+    // Вспомогательный класс для десериализации
+    private static class DeserializeRequest {
+        private String serializedFunction;
+
+        public String getSerializedFunction() {
+            return serializedFunction;
+        }
+
+        public void setSerializedFunction(String serializedFunction) {
+            this.serializedFunction = serializedFunction;
         }
     }
 }

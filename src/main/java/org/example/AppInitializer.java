@@ -33,7 +33,7 @@ public class AppInitializer implements ServletContextListener {
         if (admin.isEmpty()) {
             logger.info("Создание администратора по умолчанию");
             User newAdmin = new User();
-            newAdmin.setLogin(adminLogin);
+            newAdmin.setUsername(adminLogin);
             newAdmin.setPasswordHash(PasswordUtil.hashPassword("admin"));
             newAdmin.setRole("admin");
 

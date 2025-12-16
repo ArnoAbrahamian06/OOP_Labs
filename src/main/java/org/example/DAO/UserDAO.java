@@ -510,7 +510,7 @@ public class UserDAO {
     private User mapResultSetToUser(ResultSet resultSet) throws SQLException {
         User user = new User();
         user.setId(resultSet.getInt("id"));
-        user.setLogin(resultSet.getString("username"));
+        user.setUsername(resultSet.getString("username"));
         user.setPasswordHash(resultSet.getString("password_hash"));
         user.setRole(resultSet.getString("role"));
 

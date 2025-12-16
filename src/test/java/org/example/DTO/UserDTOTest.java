@@ -13,7 +13,7 @@ class UserDTOTest {
         UserDTO user = new UserDTO();
 
         user.setId(1);
-        user.setLogin("testUser");
+        user.setUsername("testUser");
         user.setPasswordHash("hashedPassword123");
         user.setRole("ADMIN");
         LocalDateTime now = LocalDateTime.now();

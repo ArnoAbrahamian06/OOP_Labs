@@ -116,7 +116,7 @@ public class TabulatedFunctionOperationService {
     }
 
     // Метод вычитания
-    public TabulatedFunction sub(TabulatedFunction a, TabulatedFunction b) {
+    public TabulatedFunction subtract(TabulatedFunction a, TabulatedFunction b) {
         logger.debug("Вызов операции вычитания функций");
 
         return doOperation(a, b, new BiOperation() {
@@ -130,7 +130,7 @@ public class TabulatedFunctionOperationService {
     }
 
     // Метод умножения
-    public TabulatedFunction mult (TabulatedFunction a, TabulatedFunction b) {
+    public TabulatedFunction multiply (TabulatedFunction a, TabulatedFunction b) {
         logger.debug("Вызов операции умножения функций");
 
         return doOperation(a, b, new BiOperation() {
@@ -144,7 +144,7 @@ public class TabulatedFunctionOperationService {
     }
 
     // Метод деления
-    public TabulatedFunction div(TabulatedFunction a, TabulatedFunction b) {
+    public TabulatedFunction divide(TabulatedFunction a, TabulatedFunction b) {
         logger.debug("Вызов операции деления функций");
 
         return doOperation(a, b, new BiOperation() {

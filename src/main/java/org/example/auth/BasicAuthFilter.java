@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Optional;
 
-@WebFilter(urlPatterns = {"/api/v1/*"})
+@WebFilter(urlPatterns = {"/*"})
 public class BasicAuthFilter implements Filter {
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
     private UserDAO userDAO;
@@ -46,7 +46,7 @@ public class BasicAuthFilter implements Filter {
                     Optional<User> user = userDAO.findByUsername(login);
 
                     if (user.isPresent() && PasswordUtil.verifyPassword(password, user.get().getPasswordHash())) {
-                        httpRequest.setAttribute("currentUser", user);
+                        httpRequest.setAttribute("currentUser", user.get());
                         logger.info("Успешная аутентификация пользователя: {}", login);
                         chain.doFilter(request, response);
                         return;

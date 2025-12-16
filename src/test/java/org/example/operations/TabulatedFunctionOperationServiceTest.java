@@ -59,7 +59,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testMultiplicationArrayArray() {
         service.setFactory(new ArrayTabulatedFunctionFactory());
-        TabulatedFunction result = service.mult(arrayFunction1, arrayFunction2);
+        TabulatedFunction result = service.multiply(arrayFunction1, arrayFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(50.0, result.getY(0), 1e-10); // 10.0 * 5.0
@@ -71,7 +71,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testMultiplicationLinkedListLinkedList() {
         service.setFactory(new LinkedListTabulatedFunctionFactory());
-        TabulatedFunction result = service.mult(linkedListFunction1, linkedListFunction2);
+        TabulatedFunction result = service.multiply(linkedListFunction1, linkedListFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(50.0, result.getY(0), 1e-10); // 10.0 * 5.0
@@ -96,12 +96,12 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testMultiplicationMixedTypes() {
         // Array + LinkedList
-        TabulatedFunction result1 = service.mult(arrayFunction1, linkedListFunction2);
+        TabulatedFunction result1 = service.multiply(arrayFunction1, linkedListFunction2);
         assertEquals(4, result1.getCount());
         assertEquals(50.0, result1.getY(0), 1e-10);
 
         // LinkedList + Array
-        TabulatedFunction result2 = service.mult(linkedListFunction1, arrayFunction2);
+        TabulatedFunction result2 = service.multiply(linkedListFunction1, arrayFunction2);
         assertEquals(4, result2.getCount());
         assertEquals(50.0, result2.getY(0), 1e-10);
     }
@@ -109,7 +109,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testSubtractionArrayArray() {
         service.setFactory(new ArrayTabulatedFunctionFactory());
-        TabulatedFunction result = service.sub(arrayFunction1, arrayFunction2);
+        TabulatedFunction result = service.subtract(arrayFunction1, arrayFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(5.0, result.getY(0), 1e-10);  // 10.0 - 5.0
@@ -121,7 +121,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testDivisionArrayArray() {
         service.setFactory(new ArrayTabulatedFunctionFactory());
-        TabulatedFunction result = service.div(arrayFunction1, arrayFunction2);
+        TabulatedFunction result = service.divide(arrayFunction1, arrayFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(2.0, result.getY(0), 1e-10);  // 10.0 / 5.0
@@ -133,7 +133,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testSubtractionLinkedListLinkedList() {
         service.setFactory(new LinkedListTabulatedFunctionFactory());
-        TabulatedFunction result = service.sub(linkedListFunction1, linkedListFunction2);
+        TabulatedFunction result = service.subtract(linkedListFunction1, linkedListFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(5.0, result.getY(0), 1e-10);
@@ -145,7 +145,7 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testDivisionLinkedListLinkedList() {
         service.setFactory(new LinkedListTabulatedFunctionFactory());
-        TabulatedFunction result = service.div(linkedListFunction1, linkedListFunction2);
+        TabulatedFunction result = service.divide(linkedListFunction1, linkedListFunction2);
 
         assertEquals(4, result.getCount());
         assertEquals(2.0, result.getY(0), 1e-10);  // 10.0 / 5.0
@@ -158,12 +158,12 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testSubtractionMixedTypes() {
         // Array - LinkedList
-        TabulatedFunction result1 = service.sub(arrayFunction1, linkedListFunction2);
+        TabulatedFunction result1 = service.subtract(arrayFunction1, linkedListFunction2);
         assertEquals(4, result1.getCount());
         assertEquals(5.0, result1.getY(0), 1e-10);
 
         // LinkedList - Array
-        TabulatedFunction result2 = service.sub(linkedListFunction1, arrayFunction2);
+        TabulatedFunction result2 = service.subtract(linkedListFunction1, arrayFunction2);
         assertEquals(4, result2.getCount());
         assertEquals(5.0, result2.getY(0), 1e-10);
     }
@@ -171,12 +171,12 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testDivisionMixedTypes() {
         // Array - LinkedList
-        TabulatedFunction result1 = service.div(arrayFunction1, linkedListFunction2);
+        TabulatedFunction result1 = service.divide(arrayFunction1, linkedListFunction2);
         assertEquals(4, result1.getCount());
         assertEquals(2.0, result1.getY(0), 1e-10);
 
         // LinkedList - Array
-        TabulatedFunction result2 = service.div(linkedListFunction1, arrayFunction2);
+        TabulatedFunction result2 = service.divide(linkedListFunction1, arrayFunction2);
         assertEquals(4, result2.getCount());
         assertEquals(2.0, result2.getY(0), 1e-10);
     }
@@ -252,8 +252,8 @@ public class TabulatedFunctionOperationServiceTest {
     @Test
     public void testMultiplicationAreCommutative() {
         // a + b должно быть равно b + a
-        TabulatedFunction result1 = service.mult(arrayFunction1, arrayFunction2);
-        TabulatedFunction result2 = service.mult(arrayFunction2, arrayFunction1);
+        TabulatedFunction result1 = service.multiply(arrayFunction1, arrayFunction2);
+        TabulatedFunction result2 = service.multiply(arrayFunction2, arrayFunction1);
 
         assertEquals(result1.getCount(), result2.getCount());
         for (int i = 0; i < result1.getCount(); i++) {

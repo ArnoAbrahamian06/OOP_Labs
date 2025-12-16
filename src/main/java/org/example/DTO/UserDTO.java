@@ -24,7 +24,7 @@ public class UserDTO {
     public void setId(Integer id) { this.id = id; }
 
     public String getUsername() { return username; }
-    public void setLogin(String username) { this.username = username; }
+    public void setUsername(String username) { this.username = username; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

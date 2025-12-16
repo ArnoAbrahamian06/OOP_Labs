@@ -26,7 +26,7 @@ public class User {
     public void setId(Integer id) { this.id = id; }
 
     public String getUsername() { return username; }
-    public void setLogin(String username) { this.username = username; }
+    public void setUsername(String username) { this.username = username; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
@@ -42,4 +42,6 @@ public class User {
         return String.format("UserDTO{id=%d, username='%s', role='%s', created_at=%s}",
                 id, username, role, created_at);
     }
+
+
 }

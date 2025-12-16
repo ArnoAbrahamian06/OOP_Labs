@@ -20,7 +20,7 @@ class UserMapperTest {
 
         user = new User();
         user.setId(1);
-        user.setLogin("testUser");
+        user.setUsername("testUser");
         user.setRole("ADMIN");
         user.setPasswordHash("hashedPassword123");
         user.setCreated_at(now);
@@ -87,7 +87,7 @@ class UserMapperTest {
     void testToDTO_WithNullValues() {
         User userWithNulls = new User();
         userWithNulls.setId(null);
-        userWithNulls.setLogin(null);
+        userWithNulls.setUsername(null);
         userWithNulls.setRole(null);
         userWithNulls.setPasswordHash(null);
         userWithNulls.setCreated_at(null);

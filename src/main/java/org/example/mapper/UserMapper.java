@@ -5,6 +5,10 @@ import org.example.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
+
+
 public class UserMapper {
     private static final Logger logger = LoggerFactory.getLogger(UserMapper.class);
 
@@ -32,7 +36,7 @@ public class UserMapper {
         logger.debug("Преобразование UserDTO в User");
         User user = new User();
         user.setId(dto.getId());
-        user.setLogin(dto.getUsername());
+        user.setUsername(dto.getUsername());
         user.setRole(dto.getRole());
         user.setPasswordHash(dto.getPasswordHash());
         user.setCreated_at(dto.getCreated_at());

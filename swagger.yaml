@@ -23,7 +23,7 @@ tags:
 
 paths:
   # ==================== ФУНКЦИИ ====================
-  /api/functions:
+  /functions:
     get:
       tags:
         - Functions
@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/functions/{id}:
+  /functions/{id}:
     get:
       tags:
         - Functions
@@ -175,7 +175,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # ==================== ТОЧКИ ====================
-  /api/points:
+  /points:
     get:
       tags:
         - Points
@@ -228,7 +228,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/points/{id}:
+  /points/{id}:
     get:
       tags:
         - Points
@@ -327,7 +327,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # ==================== ПОЛЬЗОВАТЕЛИ ====================
-  /api/users:
+  /users:
     get:
       tags:
         - Users
@@ -380,7 +380,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/users/{id}:
+  /users/{id}:
     get:
       tags:
         - Users
@@ -635,7 +635,7 @@ components:
         path:
           type: string
           description: Путь запроса
-          example: "/api/functions/999"
+          example: "/functions/999"
 
   # ============ ПАРАМЕТРЫ ЗАПРОСА ============
   parameters:
