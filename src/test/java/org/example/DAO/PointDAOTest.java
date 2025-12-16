@@ -34,19 +34,19 @@ class PointDAOTest {
         testPoint.setYValue(20.7);
     }
 
-    @AfterAll
-    void tearDown() {
-        logger.info("Очистка тестовых данных PointDAO");
-
-        // Удаляем созданные точки
-        for (Integer pointId : cleanupPointIds) {
-            try {
-                pointDAO.delete(pointId);
-            } catch (Exception e) {
-                logger.warn("Не удалось удалить точку ID {}: {}", pointId, e.getMessage());
-            }
-        }
-    }
+//    @AfterAll
+//    void tearDown() {
+//        logger.info("Очистка тестовых данных PointDAO");
+//
+//        // Удаляем созданные точки
+//        for (Integer pointId : cleanupPointIds) {
+//            try {
+//                pointDAO.delete(pointId);
+//            } catch (Exception e) {
+//                logger.warn("Не удалось удалить точку ID {}: {}", pointId, e.getMessage());
+//            }
+//        }
+//    }
 
     @Test
     @Order(1)

@@ -24,7 +24,7 @@ public class LeftSteppingDifferentialOperator extends SteppingDifferentialOperat
                 double f_x = function.apply(x);
                 double f_x_minus_step = function.apply(x - step);
                 double derivative = (f_x - f_x_minus_step) / step;
-                logger.trace("Левая производная в точке x={}: (f({}) - f({})) / {} = {}",
+                logger.debug("Левая производная в точке x={}: (f({}) - f({})) / {} = {}",
                         x, x, x - step, step, derivative);
 
                 return derivative;

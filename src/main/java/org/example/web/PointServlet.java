@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.DAO.FunctionDAO;
 import org.example.DAO.PointDAO;
 import org.example.models.Point;
+import org.example.operations.MiddleSteppingDifferentialOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.auth.AuthorizationService;
@@ -450,7 +451,7 @@ public class PointServlet extends BaseServlet {
 
             // Определяем шаг для дифференцирования
             double step = xValues.length > 1 ? xValues[1] - xValues[0] : 1.0;
-            LeftSteppingDifferentialOperator diffOperator = new LeftSteppingDifferentialOperator(step);
+            MiddleSteppingDifferentialOperator diffOperator = new MiddleSteppingDifferentialOperator(step);
 
             // Применяем оператор дифференцирования
             MathFunction differentiatedFunction = diffOperator.derive(originalFunction);
