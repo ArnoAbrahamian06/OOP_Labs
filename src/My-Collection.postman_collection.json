@@ -22,7 +22,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1",
+							"raw": "http://localhost:8080/functions/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -34,7 +34,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/1' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/1' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -49,7 +49,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/145",
+							"raw": "http://localhost:8080/functions/145",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -61,7 +61,7 @@
 								"145"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/functions/145' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/functions/145' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -76,7 +76,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/owner/200",
+							"raw": "http://localhost:8080/functions/owner/200",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -89,7 +89,7 @@
 								"200"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/owner/200' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/owner/200' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -104,7 +104,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/owner/me",
+							"raw": "http://localhost:8080/functions/owner/me",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -117,7 +117,7 @@
 								"me"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/owner/me' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/owner/me' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -132,7 +132,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/by-name?name=cos",
+							"raw": "http://localhost:8080/functions/by-name?name=cos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -150,7 +150,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/by-name?name=cos' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/by-name?name=cos' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -178,7 +178,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/144",
+							"raw": "http://localhost:8080/functions/144",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -190,7 +190,7 @@
 								"144"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/functions/144' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"name\": \"x^2\",\r\n  \"points\": [\r\n    {\r\n      \"x\": 1,\r\n      \"y\": 1\r\n    },\r\n    {\r\n      \"x\": 2,\r\n      \"y\": 4\r\n    },\r\n    {\r\n      \"x\": 3,\r\n      \"y\": 9\r\n    }\r\n  ]\r\n}'"
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/functions/144' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"name\": \"x^2\",\r\n  \"points\": [\r\n    {\r\n      \"x\": 1,\r\n      \"y\": 1\r\n    },\r\n    {\r\n      \"x\": 2,\r\n      \"y\": 4\r\n    },\r\n    {\r\n      \"x\": 3,\r\n      \"y\": 9\r\n    }\r\n  ]\r\n}'"
 					},
 					"response": []
 				},
@@ -218,7 +218,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions",
+							"raw": "http://localhost:8080/functions",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -229,7 +229,7 @@
 								"functions"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"ownerId\": 200,\r\n  \"name\": \"x^3\",\r\n  \"points\": [\r\n    {\r\n      \"x\": 1,\r\n      \"y\": 1\r\n    },\r\n    {\r\n      \"x\": 2,\r\n      \"y\": 8\r\n    },\r\n    {\r\n      \"x\": 3,\r\n      \"y\": 27\r\n    }\r\n  ]\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"ownerId\": 200,\r\n  \"name\": \"x^3\",\r\n  \"points\": [\r\n    {\r\n      \"x\": 1,\r\n      \"y\": 1\r\n    },\r\n    {\r\n      \"x\": 2,\r\n      \"y\": 8\r\n    },\r\n    {\r\n      \"x\": 3,\r\n      \"y\": 27\r\n    }\r\n  ]\r\n}'"
 					},
 					"response": []
 				}
@@ -262,7 +262,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/operations/binary",
+							"raw": "http://localhost:8080/functions/1/operations/binary",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -276,7 +276,7 @@
 								"binary"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/1/operations/binary' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"secondFunctionId\": 2,\r\n  \"operation\": \"ADD\"\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/1/operations/binary' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"secondFunctionId\": 2,\r\n  \"operation\": \"ADD\"\r\n}'"
 					},
 					"response": []
 				},
@@ -304,7 +304,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/derive",
+							"raw": "http://localhost:8080/functions/1/derive",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -317,7 +317,7 @@
 								"derive"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/1/derive' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"order\": 1\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/1/derive' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"order\": 1\r\n}'"
 					},
 					"response": []
 				}
@@ -350,7 +350,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/import/text",
+							"raw": "http://localhost:8080/functions/import/text",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -363,7 +363,7 @@
 								"text"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/import/text' \\\r\n  -H 'accept: application/octet-stream' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '\"3\r\n1,0 2,5\r\n2,0 3,0\r\n3,0 4,5\"'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/import/text' \\\r\n  -H 'accept: application/octet-stream' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '\"3\r\n1,0 2,5\r\n2,0 3,0\r\n3,0 4,5\"'"
 					},
 					"response": []
 				},
@@ -391,7 +391,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/import/serialized",
+							"raw": "http://localhost:8080/functions/import/serialized",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -404,7 +404,7 @@
 								"serialized"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/import/serialized' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/octet-stream' \\\r\n  --data-binary '@function.txt'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/import/serialized' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/octet-stream' \\\r\n  --data-binary '@function.txt'"
 					},
 					"response": []
 				},
@@ -432,7 +432,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/import/binary",
+							"raw": "http://localhost:8080/functions/import/binary",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -445,7 +445,7 @@
 								"binary"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/import/binary' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/octet-stream' \\\r\n  --data-binary '@binary function.bin'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/import/binary' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/octet-stream' \\\r\n  --data-binary '@binary function.bin'"
 					},
 					"response": []
 				},
@@ -460,7 +460,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/export/text",
+							"raw": "http://localhost:8080/functions/1/export/text",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -474,7 +474,7 @@
 								"text"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/1/export/text' \\\r\n  -H 'accept: text/plain'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/1/export/text' \\\r\n  -H 'accept: text/plain'"
 					},
 					"response": []
 				},
@@ -489,7 +489,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/export/serialized",
+							"raw": "http://localhost:8080/functions/1/export/serialized",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -503,7 +503,7 @@
 								"serialized"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/1/export/serialized' \\\r\n  -H 'accept: application/octet-stream'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/1/export/serialized' \\\r\n  -H 'accept: application/octet-stream'"
 					},
 					"response": []
 				},
@@ -518,7 +518,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/export/binary",
+							"raw": "http://localhost:8080/functions/1/export/binary",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -532,7 +532,7 @@
 								"binary"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/functions/1/export/binary' \\\r\n  -H 'accept: application/octet-stream'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/functions/1/export/binary' \\\r\n  -H 'accept: application/octet-stream'"
 					},
 					"response": []
 				}
@@ -552,7 +552,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/users/single/jane_doe12",
+							"raw": "http://localhost:8080/search/users/single/jane_doe12",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -566,7 +566,7 @@
 								"jane_doe12"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/users/single/jane_doe12' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/users/single/jane_doe12' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -581,7 +581,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/users/multiple/role/USER",
+							"raw": "http://localhost:8080/search/users/multiple/role/USER",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -596,7 +596,7 @@
 								"USER"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/users/multiple/role/USER' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/users/multiple/role/USER' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -611,7 +611,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/points/in-range?minX=1.5&maxX=4&minY=0.997&maxY=8",
+							"raw": "http://localhost:8080/search/points/in-range?minX=1.5&maxX=4&minY=0.997&maxY=8",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -642,7 +642,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/points/in-range?minX=1.5&maxX=4&minY=0.997&maxY=8' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/points/in-range?minX=1.5&maxX=4&minY=0.997&maxY=8' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -657,7 +657,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/points/by-function/1",
+							"raw": "http://localhost:8080/search/points/by-function/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -671,7 +671,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/points/by-function/1' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/points/by-function/1' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -686,7 +686,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/points/advanced?functionId=1&minX=1.5&maxX=4&minY=0.997&maxY=8&sortBy=x&direction=asc",
+							"raw": "http://localhost:8080/search/points/advanced?functionId=1&minX=1.5&maxX=4&minY=0.997&maxY=8&sortBy=x&direction=asc",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -729,7 +729,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/points/advanced?functionId=1&minX=1.5&maxX=4&minY=0.997&maxY=8&sortBy=x&direction=asc' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/points/advanced?functionId=1&minX=1.5&maxX=4&minY=0.997&maxY=8&sortBy=x&direction=asc' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -744,7 +744,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/functions/with-min-points/3",
+							"raw": "http://localhost:8080/search/functions/with-min-points/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -758,7 +758,7 @@
 								"3"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/functions/with-min-points/3' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/functions/with-min-points/3' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -773,7 +773,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/functions/by-user/1",
+							"raw": "http://localhost:8080/search/functions/by-user/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -787,7 +787,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/functions/by-user/1' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/functions/by-user/1' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -802,7 +802,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/search/functions/by-name?name=cos",
+							"raw": "http://localhost:8080/search/functions/by-name?name=cos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -821,7 +821,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/search/functions/by-name?name=cos' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/search/functions/by-name?name=cos' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				}
@@ -854,7 +854,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/functions/1/evaluate",
+							"raw": "http://localhost:8080/functions/1/evaluate",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -867,7 +867,7 @@
 								"evaluate"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/functions/1/evaluate' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"xvalue\": 1.5\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/functions/1/evaluate' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"xvalue\": 1.5\r\n}'"
 					},
 					"response": []
 				}
@@ -887,7 +887,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/users/200",
+							"raw": "http://localhost:8080/users/200",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -899,7 +899,7 @@
 								"200"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users/200' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/users/200' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -927,7 +927,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/users/200",
+							"raw": "http://localhost:8080/users/200",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -939,7 +939,7 @@
 								"200"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/users/200' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"user\",\r\n  \"password\": \"password\"\r\n}'"
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/users/200' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"user\",\r\n  \"password\": \"password\"\r\n}'"
 					},
 					"response": []
 				},
@@ -954,7 +954,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/users/202",
+							"raw": "http://localhost:8080/users/202",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -966,7 +966,7 @@
 								"202"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/users/202' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/users/202' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -981,7 +981,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/users",
+							"raw": "http://localhost:8080/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -992,7 +992,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/users' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -1020,7 +1020,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/users",
+							"raw": "http://localhost:8080/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1031,7 +1031,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"Arno\",\r\n  \"password\": \"password\"\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/users' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"Arno\",\r\n  \"password\": \"password\"\r\n}'"
 					},
 					"response": []
 				}
@@ -1051,7 +1051,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/users/1/assign-role?newRole=USER",
+							"raw": "http://localhost:8080/admin/users/1/assign-role?newRole=USER",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1071,7 +1071,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/admin/users/1/assign-role?newRole=USER' \\\r\n  -H 'accept: */*'\r\n"
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/admin/users/1/assign-role?newRole=USER' \\\r\n  -H 'accept: */*'\r\n"
 					},
 					"response": []
 				},
@@ -1086,7 +1086,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/users/create?username=jane_doe13&password=password&role=USER",
+							"raw": "http://localhost:8080/admin/users/create?username=jane_doe13&password=password&role=USER",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1113,7 +1113,7 @@
 								}
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/admin/users/create?username=jane_doe13&password=password&role=USER' \\\r\n  -H 'accept: */*' \\\r\n  -d ''"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/admin/users/create?username=jane_doe13&password=password&role=USER' \\\r\n  -H 'accept: */*' \\\r\n  -d ''"
 					},
 					"response": []
 				},
@@ -1128,7 +1128,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/users",
+							"raw": "http://localhost:8080/admin/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1140,7 +1140,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/admin/users' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/admin/users' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -1155,7 +1155,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/users/role/USER",
+							"raw": "http://localhost:8080/admin/users/role/USER",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1169,7 +1169,7 @@
 								"USER"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/admin/users/role/USER' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/admin/users/role/USER' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				}
@@ -1189,7 +1189,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/moderator/users",
+							"raw": "http://localhost:8080/moderator/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1201,7 +1201,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/moderator/users' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/moderator/users' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				},
@@ -1216,7 +1216,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/moderator/users/200",
+							"raw": "http://localhost:8080/moderator/users/200",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1229,7 +1229,7 @@
 								"200"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/moderator/users/200' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/moderator/users/200' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				}

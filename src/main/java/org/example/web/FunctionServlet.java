@@ -578,10 +578,10 @@ public class FunctionServlet extends BaseServlet {
             handleError(resp, 400, "Неверный формат ID", "/functions/" + idStr);
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка валидации при обновлении функции: {}", e.getMessage());
-            handleError(resp, 400, e.getMessage(), "/api/functions/" + idStr);
+            handleError(resp, 400, e.getMessage(), "/functions/" + idStr);
         } catch (Exception e) {
             logger.error("Ошибка при обновлении функции с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при обновлении функции", "/api/functions/" + idStr);
+            handleError(resp, 500, "Ошибка при обновлении функции", "/functions/" + idStr);
         }
     }
 
@@ -594,7 +594,7 @@ public class FunctionServlet extends BaseServlet {
             Optional<Function> functionOpt = functionDAO.findById(id);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена для обновления сигнатуры с ID: {}", id);
-                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id + "/signature");
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id + "/signature");
                 return;
             }
 
@@ -612,15 +612,15 @@ public class FunctionServlet extends BaseServlet {
             SignatureUpdateRequest request = objectMapper.readValue(req.getInputStream(), SignatureUpdateRequest.class);
             if (request.getSignature() == null || request.getSignature().trim().isEmpty()) {
                 logger.error("Сигнатура не может быть пустой");
-                handleError(resp, 400, "Сигнатура не может быть пустой", "/api/functions/" + id + "/signature");
+                handleError(resp, 400, "Сигнатура не может быть пустой", "/functions/" + id + "/signature");
                 return;
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/functions/" + idStr + "/signature");
+            handleError(resp, 400, "Неверный формат ID", "/functions/" + idStr + "/signature");
         } catch (Exception e) {
             logger.error("Ошибка при обновлении сигнатуры функции с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при обновлении сигнатуры функции", "/api/functions/" + idStr + "/signature");
+            handleError(resp, 500, "Ошибка при обновлении сигнатуры функции", "/functions/" + idStr + "/signature");
         }
     }
 
@@ -633,7 +633,7 @@ public class FunctionServlet extends BaseServlet {
             Optional<Function> functionOpt = functionDAO.findById(id);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена для удаления с ID: {}", id);
-                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id);
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id);
                 return;
             }
 
@@ -654,14 +654,14 @@ public class FunctionServlet extends BaseServlet {
                         id, currentUser.getUsername());
             } else {
                 logger.warn("Функция не найдена для удаления с ID: {}", id);
-                handleError(resp, 404, "Функция не найдена", "/api/functions/" + id);
+                handleError(resp, 404, "Функция не найдена", "/functions/" + id);
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/functions/" + idStr);
+            handleError(resp, 400, "Неверный формат ID", "/functions/" + idStr);
         } catch (Exception e) {
             logger.error("Ошибка при удалении функции с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при удалении функции", "/api/functions/" + idStr);
+            handleError(resp, 500, "Ошибка при удалении функции", "/functions/" + idStr);
         }
     }
 
@@ -687,14 +687,14 @@ public class FunctionServlet extends BaseServlet {
                         userId, currentUser.getUsername());
             } else {
                 logger.error("Не удалось удалить функции пользователя с ID {}", userId);
-                handleError(resp, 500, "Ошибка при удалении функций пользователя", "/api/functions/search/by-user/" + userId);
+                handleError(resp, 500, "Ошибка при удалении функций пользователя", "/functions/search/by-user/" + userId);
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID пользователя: {}", userIdStr, e);
-            handleError(resp, 400, "Неверный формат ID пользователя", "/api/functions/search/by-user/" + userIdStr);
+            handleError(resp, 400, "Неверный формат ID пользователя", "/functions/search/by-user/" + userIdStr);
         } catch (Exception e) {
             logger.error("Ошибка при удалении функций пользователя с ID {}: {}", userIdStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при удалении функций пользователя", "/api/functions/search/by-user/" + userIdStr);
+            handleError(resp, 500, "Ошибка при удалении функций пользователя", "/functions/search/by-user/" + userIdStr);
         }
     }
 
@@ -725,7 +725,7 @@ public class FunctionServlet extends BaseServlet {
         // Разбираем путь: id1/id2/operation
         String[] parts = pathSuffix.split("/");
         if (parts.length != 3) {
-            handleError(resp, 400, "Неверный формат пути для операции", "/api/functions/operations/" + pathSuffix);
+            handleError(resp, 400, "Неверный формат пути для операции", "/functions/operations/" + pathSuffix);
             return;
         }
 
@@ -740,7 +740,7 @@ public class FunctionServlet extends BaseServlet {
 
             if (!function1Opt.isPresent() || !function2Opt.isPresent()) {
                 logger.warn("Функция с ID {} или {} не найдена", id1, id2);
-                handleError(resp, 404, "Одна из функций не найдена", "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                handleError(resp, 404, "Одна из функций не найдена", "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                 return;
             }
 
@@ -774,7 +774,7 @@ public class FunctionServlet extends BaseServlet {
             // Проверяем соответствие точек
             if (points1.size() != points2.size()) {
                 handleError(resp, 400, "Функции имеют разное количество точек",
-                        "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                        "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                 return;
             }
 
@@ -783,7 +783,7 @@ public class FunctionServlet extends BaseServlet {
                 if (Math.abs(points1.get(i).getXValue() - points2.get(i).getXValue()) > 1e-9) {
                     handleError(resp, 400, String.format("Несовпадение значений X на позиции %d: %f vs %f",
                                     i, points1.get(i).getXValue(), points2.get(i).getXValue()),
-                            "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                            "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                     return;
                 }
             }
@@ -818,13 +818,13 @@ public class FunctionServlet extends BaseServlet {
                         resultFunction = operationService.divide(func1, func2);
                     } catch (ArithmeticException e) {
                         handleError(resp, 400, "Деление на ноль в одной из точек",
-                                "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                                "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                         return;
                     }
                     break;
                 default:
                     handleError(resp, 400, "Неподдерживаемая операция: " + operation,
-                            "/api/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                            "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                     return;
             }
 
@@ -858,7 +858,7 @@ public class FunctionServlet extends BaseServlet {
             if (savedFunction == null) {
                 logger.error("Не удалось сохранить результирующую функцию");
                 handleError(resp, 500, "Ошибка при сохранении результирующей функции",
-                        "/api/v1/functions/operations/" + id1 + "/" + id2 + "/" + operation);
+                        "/functions/operations/" + id1 + "/" + id2 + "/" + operation);
                 return;
             }
 
@@ -885,15 +885,15 @@ public class FunctionServlet extends BaseServlet {
 
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", pathSuffix, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/v1/functions/operations/" + pathSuffix);
+            handleError(resp, 400, "Неверный формат ID", "/functions/operations/" + pathSuffix);
         } catch (InconsistentFunctionsException e) {
             logger.error("Несовместимые функции: {}", e.getMessage(), e);
             handleError(resp, 400, "Несовместимые функции: " + e.getMessage(),
-                    "/api/v1/functions/operations/" + pathSuffix);
+                    "/functions/operations/" + pathSuffix);
         } catch (Exception e) {
             logger.error("Ошибка при выполнении операции: {}", e.getMessage(), e);
             handleError(resp, 500, "Внутренняя ошибка сервера",
-                    "/api/v1/functions/operations/" + pathSuffix);
+                    "/functions/operations/" + pathSuffix);
         }
     }
 
@@ -909,7 +909,7 @@ public class FunctionServlet extends BaseServlet {
             Optional<Function> functionOpt = functionDAO.findById(functionId);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция с ID {} не найдена", functionId);
-                handleError(resp, 404, "Функция не найдена", "/api/v1/functions/serialize/" + functionId);
+                handleError(resp, 404, "Функция не найдена", "/functions/serialize/" + functionId);
                 return;
             }
 
@@ -928,7 +928,7 @@ public class FunctionServlet extends BaseServlet {
             List<Point> points = pointDAO.findByFunctionId(functionId);
             if (points.isEmpty()) {
                 logger.warn("Функция с ID {} не имеет точек", functionId);
-                handleError(resp, 400, "Функция не содержит точек", "/api/v1/functions/serialize/" + functionId);
+                handleError(resp, 400, "Функция не содержит точек", "/functions/serialize/" + functionId);
                 return;
             }
 
@@ -957,10 +957,10 @@ public class FunctionServlet extends BaseServlet {
 
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/v1/functions/serialize/" + idStr);
+            handleError(resp, 400, "Неверный формат ID", "/functions/serialize/" + idStr);
         } catch (Exception e) {
             logger.error("Ошибка при сериализации функции с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка сериализации", "/api/v1/functions/serialize/" + idStr);
+            handleError(resp, 500, "Ошибка сериализации", "/functions/serialize/" + idStr);
         }
     }
 
@@ -973,7 +973,7 @@ public class FunctionServlet extends BaseServlet {
             DeserializeRequest request = objectMapper.readValue(req.getInputStream(), DeserializeRequest.class);
             if (request.getSerializedFunction() == null || request.getSerializedFunction().trim().isEmpty()) {
                 logger.warn("Пустая строка для десериализации");
-                handleError(resp, 400, "Пустая строка для десериализации", "/api/v1/functions/deserialize");
+                handleError(resp, 400, "Пустая строка для десериализации", "/functions/deserialize");
                 return;
             }
 
@@ -983,7 +983,7 @@ public class FunctionServlet extends BaseServlet {
                 serializedBytes = Base64.getDecoder().decode(request.getSerializedFunction());
             } catch (IllegalArgumentException e) {
                 logger.warn("Некорректная Base64 строка: {}", e.getMessage());
-                handleError(resp, 400, "Неверный формат Base64", "/api/v1/functions/deserialize");
+                handleError(resp, 400, "Неверный формат Base64", "/functions/deserialize");
                 return;
             }
 
@@ -993,11 +993,11 @@ public class FunctionServlet extends BaseServlet {
                 function = FunctionsIO.deserialize(bufferedStream);
             } catch (ClassNotFoundException e) {
                 logger.error("Не удалось десериализовать: класс не найден", e);
-                handleError(resp, 400, "Несовместимый формат данных", "/api/v1/functions/deserialize");
+                handleError(resp, 400, "Несовместимый формат данных", "/functions/deserialize");
                 return;
             } catch (IOException e) {
                 logger.error("Ошибка при десериализации: {}", e.getMessage(), e);
-                handleError(resp, 400, "Повреждённые данные", "/api/v1/functions/deserialize");
+                handleError(resp, 400, "Повреждённые данные", "/functions/deserialize");
                 return;
             }
 
@@ -1010,7 +1010,7 @@ public class FunctionServlet extends BaseServlet {
             Function savedFunction = functionDAO.insert(newFunction);
             if (savedFunction == null) {
                 logger.error("Не удалось сохранить десериализованную функцию");
-                handleError(resp, 500, "Ошибка при сохранении функции", "/api/v1/functions/deserialize");
+                handleError(resp, 500, "Ошибка при сохранении функции", "/functions/deserialize");
                 return;
             }
 
@@ -1038,10 +1038,10 @@ public class FunctionServlet extends BaseServlet {
 
         } catch (IOException e) {
             logger.error("Ошибка при чтении тела запроса: {}", e.getMessage(), e);
-            handleError(resp, 400, "Ошибка при чтении тела запроса", "/api/v1/functions/deserialize");
+            handleError(resp, 400, "Ошибка при чтении тела запроса", "/functions/deserialize");
         } catch (Exception e) {
             logger.error("Необработанная ошибка при десериализации: {}", e.getMessage(), e);
-            handleError(resp, 500, "Ошибка сервера при десериализации", "/api/v1/functions/deserialize");
+            handleError(resp, 500, "Ошибка сервера при десериализации", "/functions/deserialize");
         }
     }
 

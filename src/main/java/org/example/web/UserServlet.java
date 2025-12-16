@@ -395,7 +395,7 @@ public class UserServlet extends BaseServlet {
                     login, AuthorizationService.getCurrentUser(req).getUsername());
         } else {
             logger.warn("Пользователь не найден для удаления с логином: {}", login);
-            handleError(resp, 404, "Пользователь не найден", "/api/users/search/by-login/" + login);
+            handleError(resp, 404, "Пользователь не найден", "/users/search/by-login/" + login);
         }
     }
 
@@ -424,7 +424,7 @@ public class UserServlet extends BaseServlet {
             logger.info("Найдено {} пользователей из {} запрошенных", result.size(), request.getIds().size());
         } catch (Exception e) {
             logger.error("Ошибка при множественном поиске пользователей: {}", e.getMessage(), e);
-            handleError(resp, 400, "Ошибка при поиске пользователей", "/api/users/search/by-ids");
+            handleError(resp, 400, "Ошибка при поиске пользователей", "/users/search/by-ids");
         }
     }
 

@@ -1,5 +1,6 @@
 package org.example.web;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.example.DAO.FunctionDAO;
 import org.example.DAO.PointDAO;
 import org.example.models.Point;
@@ -462,7 +463,7 @@ public class PointServlet extends BaseServlet {
             if (savedFunction == null) {
                 logger.error("Не удалось создать функцию для результата дифференцирования");
                 handleError(resp, 500, "Не удалось создать функцию для результата дифференцирования",
-                        "/api/points/differential/" + functionId);
+                        "/points/differential/" + functionId);
                 return;
             }
 
@@ -505,10 +506,10 @@ public class PointServlet extends BaseServlet {
 
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID функции: {}", functionIdStr, e);
-            handleError(resp, 400, "Неверный формат ID функции", "/api/points/differential/" + functionIdStr);
+            handleError(resp, 400, "Неверный формат ID функции", "/points/differential/" + functionIdStr);
         } catch (Exception e) {
             logger.error("Ошибка при дифференцировании функции с ID {}: {}", functionIdStr, e.getMessage(), e);
-            handleError(resp, 500, "Внутренняя ошибка сервера", "/api/points/differential/" + functionIdStr);
+            handleError(resp, 500, "Внутренняя ошибка сервера", "/points/differential/" + functionIdStr);
         }
     }
 
@@ -582,7 +583,7 @@ public class PointServlet extends BaseServlet {
             Optional<Point> pointOpt = pointDAO.findById(id);
             if (!pointOpt.isPresent()) {
                 logger.warn("Точка не найдена по ID: {}", id);
-                handleError(resp, 404, "Точка не найдена", "/api/points/" + id);
+                handleError(resp, 404, "Точка не найдена", "/points/" + id);
                 return;
             }
 
@@ -591,7 +592,7 @@ public class PointServlet extends BaseServlet {
 
             if (!functionOpt.isPresent()) {
                 logger.error("Функция для точки ID {} не найдена", id);
-                handleError(resp, 404, "Функция для точки не найдена", "/api/points/" + id);
+                handleError(resp, 404, "Функция для точки не найдена", "/points/" + id);
                 return;
             }
 
@@ -611,7 +612,7 @@ public class PointServlet extends BaseServlet {
             logger.info("Найдена точка по ID: {}", id);
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/points/" + idStr);
+            handleError(resp, 400, "Неверный формат ID", "/points/" + idStr);
         }
     }
 
@@ -624,7 +625,7 @@ public class PointServlet extends BaseServlet {
             Optional<org.example.models.Function> functionOpt = functionDAO.findById(functionId);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена по ID: {}", functionId);
-                handleError(resp, 404, "Функция не найдена", "/api/points/function/" + functionId);
+                handleError(resp, 404, "Функция не найдена", "/points/function/" + functionId);
                 return;
             }
 
@@ -651,7 +652,7 @@ public class PointServlet extends BaseServlet {
             logger.info("Отправлен список точек для функции ID {}. Количество: {}", functionId, pointDTOs.size());
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID функции: {}", functionIdStr, e);
-            handleError(resp, 400, "Неверный формат ID функции", "/api/points/function/" + functionIdStr);
+            handleError(resp, 400, "Неверный формат ID функции", "/points/function/" + functionIdStr);
         }
     }
 
@@ -665,7 +666,7 @@ public class PointServlet extends BaseServlet {
             Optional<org.example.models.Function> functionOpt = functionDAO.findById(pointDTO.getFunctionId());
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена для создания точки с ID: {}", pointDTO.getFunctionId());
-                handleError(resp, 404, "Функция не найдена", "/api/points");
+                handleError(resp, 404, "Функция не найдена", "/points");
                 return;
             }
 
@@ -683,7 +684,7 @@ public class PointServlet extends BaseServlet {
             // Проверка существования точки с такой же координатой X
             if (pointDAO.existsByFunctionIdAndX(function.getId(), pointDTO.getXValue())) {
                 logger.warn("Точка с X={} уже существует для функции ID {}", pointDTO.getXValue(), function.getId());
-                handleError(resp, 409, "Точка с такой координатой X уже существует для этой функции", "/api/points");
+                handleError(resp, 409, "Точка с такой координатой X уже существует для этой функции", "/points");
                 return;
             }
 
@@ -696,14 +697,14 @@ public class PointServlet extends BaseServlet {
                         savedPoint.getId(), function.getId(), currentUser.getUsername());
             } else {
                 logger.error("Не удалось создать точку");
-                handleError(resp, 400, "Не удалось создать точку", "/api/points");
+                handleError(resp, 400, "Не удалось создать точку", "/points");
             }
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка валидации при создании точки: {}", e.getMessage());
-            handleError(resp, 400, e.getMessage(), "/api/points");
+            handleError(resp, 400, e.getMessage(), "/points");
         } catch (Exception e) {
             logger.error("Ошибка при создании точки: {}", e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при создании точки", "/api/points");
+            handleError(resp, 500, "Ошибка при создании точки", "/points");
         }
     }
 
@@ -716,7 +717,7 @@ public class PointServlet extends BaseServlet {
             Optional<org.example.models.Function> functionOpt = functionDAO.findById(request.getFunctionId());
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена для массового создания точек с ID: {}", request.getFunctionId());
-                handleError(resp, 404, "Функция не найдена", "/api/points/batch");
+                handleError(resp, 404, "Функция не найдена", "/points/batch");
                 return;
             }
 
@@ -733,7 +734,7 @@ public class PointServlet extends BaseServlet {
 
             if (request.getPoints() == null || request.getPoints().isEmpty()) {
                 logger.error("Список точек для создания пустой");
-                handleError(resp, 400, "Список точек для создания пустой", "/api/points/batch");
+                handleError(resp, 400, "Список точек для создания пустой", "/points/batch");
                 return;
             }
 
@@ -742,7 +743,7 @@ public class PointServlet extends BaseServlet {
                 // Проверка существования точки с такой же координатой X
                 if (pointDAO.existsByFunctionIdAndX(function.getId(), coords.getXValue())) {
                     logger.warn("Точка с X={} уже существует для функции ID {}", coords.getXValue(), function.getId());
-                    handleError(resp, 409, "Точка с координатой X=" + coords.getXValue() + " уже существует для этой функции", "/api/points/batch");
+                    handleError(resp, 409, "Точка с координатой X=" + coords.getXValue() + " уже существует для этой функции", "/points/batch");
                     return;
                 }
 
@@ -765,14 +766,14 @@ public class PointServlet extends BaseServlet {
                         insertedCount, function.getId(), currentUser.getUsername());
             } else {
                 logger.error("Не удалось создать точки");
-                handleError(resp, 400, "Не удалось создать точки", "/api/points/batch");
+                handleError(resp, 400, "Не удалось создать точки", "/points/batch");
             }
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка валидации при массовом создании точек: {}", e.getMessage());
-            handleError(resp, 400, e.getMessage(), "/api/points/batch");
+            handleError(resp, 400, e.getMessage(), "/points/batch");
         } catch (Exception e) {
             logger.error("Ошибка при массовом создании точек: {}", e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при массовом создании точек", "/api/points/batch");
+            handleError(resp, 500, "Ошибка при массовом создании точек", "/points/batch");
         }
     }
 
@@ -785,7 +786,7 @@ public class PointServlet extends BaseServlet {
             Optional<Point> pointOpt = pointDAO.findById(id);
             if (!pointOpt.isPresent()) {
                 logger.warn("Точка не найдена для обновления с ID: {}", id);
-                handleError(resp, 404, "Точка не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Точка не найдена", "/points/" + id);
                 return;
             }
 
@@ -794,7 +795,7 @@ public class PointServlet extends BaseServlet {
 
             if (!functionOpt.isPresent()) {
                 logger.error("Функция для точки ID {} не найдена", id);
-                handleError(resp, 404, "Функция для точки не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Функция для точки не найдена", "/points/" + id);
                 return;
             }
 
@@ -820,7 +821,7 @@ public class PointServlet extends BaseServlet {
             if (!pointDTO.getXValue().equals(existingPoint.getXValue()) &&
                     pointDAO.existsByFunctionIdAndX(function.getId(), pointDTO.getXValue())) {
                 logger.warn("Точка с X={} уже существует для функции ID {}", pointDTO.getXValue(), function.getId());
-                handleError(resp, 409, "Точка с такой координатой X уже существует для этой функции", "/api/v1/points/" + id);
+                handleError(resp, 409, "Точка с такой координатой X уже существует для этой функции", "/points/" + id);
                 return;
             }
 
@@ -831,17 +832,17 @@ public class PointServlet extends BaseServlet {
                         id, currentUser.getUsername());
             } else {
                 logger.warn("Точка не найдена для обновления с ID: {}", id);
-                handleError(resp, 404, "Точка не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Точка не найдена", "/points/" + id);
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/v1/points/" + idStr);
+            handleError(resp, 400, "Неверный формат ID", "/points/" + idStr);
         } catch (IllegalArgumentException e) {
             logger.error("Ошибка валидации при обновлении точки: {}", e.getMessage());
-            handleError(resp, 400, e.getMessage(), "/api/v1/points/" + idStr);
+            handleError(resp, 400, e.getMessage(), "/points/" + idStr);
         } catch (Exception e) {
             logger.error("Ошибка при обновлении точки с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при обновлении точки", "/api/v1/points/" + idStr);
+            handleError(resp, 500, "Ошибка при обновлении точки", "/points/" + idStr);
         }
     }
 
@@ -854,7 +855,7 @@ public class PointServlet extends BaseServlet {
             Optional<Point> pointOpt = pointDAO.findById(id);
             if (!pointOpt.isPresent()) {
                 logger.warn("Точка не найдена для удаления с ID: {}", id);
-                handleError(resp, 404, "Точка не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Точка не найдена", "/points/" + id);
                 return;
             }
 
@@ -863,7 +864,7 @@ public class PointServlet extends BaseServlet {
 
             if (!functionOpt.isPresent()) {
                 logger.error("Функция для точки ID {} не найдена", id);
-                handleError(resp, 404, "Функция для точки не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Функция для точки не найдена", "/points/" + id);
                 return;
             }
 
@@ -884,14 +885,14 @@ public class PointServlet extends BaseServlet {
                         id, currentUser.getUsername());
             } else {
                 logger.warn("Точка не найдена для удаления с ID: {}", id);
-                handleError(resp, 404, "Точка не найдена", "/api/v1/points/" + id);
+                handleError(resp, 404, "Точка не найдена", "/points/" + id);
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID: {}", idStr, e);
-            handleError(resp, 400, "Неверный формат ID", "/api/v1/points/" + idStr);
+            handleError(resp, 400, "Неверный формат ID", "/points/" + idStr);
         } catch (Exception e) {
             logger.error("Ошибка при удалении точки с ID {}: {}", idStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при удалении точки", "/api/v1/points/" + idStr);
+            handleError(resp, 500, "Ошибка при удалении точки", "/points/" + idStr);
         }
     }
 
@@ -904,7 +905,7 @@ public class PointServlet extends BaseServlet {
             Optional<org.example.models.Function> functionOpt = functionDAO.findById(functionId);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция не найдена для удаления точек с ID: {}", functionId);
-                handleError(resp, 404, "Функция не найдена", "/api/v1/points/function/" + functionId);
+                handleError(resp, 404, "Функция не найдена", "/points/function/" + functionId);
                 return;
             }
 
@@ -925,14 +926,14 @@ public class PointServlet extends BaseServlet {
                         functionId, currentUser.getUsername());
             } else {
                 logger.error("Ошибка при удалении точек для функции ID {}", functionId);
-                handleError(resp, 500, "Ошибка при удалении точек для функции", "/api/v1/points/function/" + functionId);
+                handleError(resp, 500, "Ошибка при удалении точек для функции", "/points/function/" + functionId);
             }
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID функции: {}", functionIdStr, e);
-            handleError(resp, 400, "Неверный формат ID функции", "/api/v1/points/function/" + functionIdStr);
+            handleError(resp, 400, "Неверный формат ID функции", "/points/function/" + functionIdStr);
         } catch (Exception e) {
             logger.error("Ошибка при удалении точек для функции ID {}: {}", functionIdStr, e.getMessage(), e);
-            handleError(resp, 500, "Ошибка при удаления точек для функции", "/api/v1/points/function/" + functionIdStr);
+            handleError(resp, 500, "Ошибка при удаления точек для функции", "/points/function/" + functionIdStr);
         }
     }
 
@@ -980,7 +981,7 @@ public class PointServlet extends BaseServlet {
                     result.size(), request.getIds().size(), currentUser.getUsername());
         } catch (Exception e) {
             logger.error("Ошибка при множественном поиске точек: {}", e.getMessage(), e);
-            handleError(resp, 400, "Ошибка при поиске точек", "/api/v1/points/batch/search-by-ids");
+            handleError(resp, 400, "Ошибка при поиске точек", "/points/batch/search-by-ids");
         }
     }
 
@@ -1013,8 +1014,11 @@ public class PointServlet extends BaseServlet {
     }
 
     private static class PointCoordinates {
+        @JsonProperty("xValue")
         private Double xValue;
+        @JsonProperty("yValue")
         private Double yValue;
+
         public Double getXValue() {
             return xValue;
         }
@@ -1045,7 +1049,7 @@ public class PointServlet extends BaseServlet {
             Optional<org.example.models.Function> functionOpt = functionDAO.findById(functionId);
             if (!functionOpt.isPresent()) {
                 logger.warn("Функция с ID {} не найдена", functionId);
-                handleError(resp, 404, "Функция не найдена", "/api/v1/points/update/batch/" + functionId);
+                handleError(resp, 404, "Функция не найдена", "/points/update/batch/" + functionId);
                 return;
             }
 
@@ -1065,7 +1069,7 @@ public class PointServlet extends BaseServlet {
                 logger.warn("Несоответствие functionId в пути ({}) и в теле ({})",
                         functionId, request.getFunctionId());
                 handleError(resp, 400, "ID функции в пути и в теле запроса не совпадают",
-                        "/api/v1/points/update/batch/" + functionId);
+                        "/points/update/batch/" + functionId);
                 return;
             }
 
@@ -1082,7 +1086,7 @@ public class PointServlet extends BaseServlet {
             if (!duplicateXValues.isEmpty()) {
                 logger.warn("Обнаружены дублирующиеся X значения в запросе: {}", duplicateXValues);
                 handleError(resp, 400, "Обнаружены дублирующиеся X значения: " + duplicateXValues,
-                        "/api/v1/points/update/batch/" + functionId);
+                        "/points/update/batch/" + functionId);
                 return;
             }
 
@@ -1105,7 +1109,7 @@ public class PointServlet extends BaseServlet {
                         .collect(Collectors.toList());
                 logger.warn("Конфликтующие X значения: {}", conflictingXValues);
                 handleError(resp, 400, "Точки с такими X значениями уже существуют: " + conflictingXValues,
-                        "/api/v1/points/update/batch/" + functionId);
+                        "/points/update/batch/" + functionId);
                 return;
             }
 
@@ -1126,17 +1130,17 @@ public class PointServlet extends BaseServlet {
 
         } catch (NumberFormatException e) {
             logger.error("Неверный формат ID функции: {}", functionIdStr, e);
-            handleError(resp, 400, "Неверный формат ID функции", "/api/v1/points/update/batch/" + functionIdStr);
+            handleError(resp, 400, "Неверный формат ID функции", "/points/update/batch/" + functionIdStr);
         } catch (IOException e) {
             logger.error("Ошибка при чтении тела запроса: {}", e.getMessage(), e);
-            handleError(resp, 400, "Ошибка при чтении тела запроса", "/api/v1/points/update/batch/" + functionIdStr);
+            handleError(resp, 400, "Ошибка при чтении тела запроса", "/points/update/batch/" + functionIdStr);
         } catch (IllegalArgumentException e) {
             logger.warn("Ошибка при массовом обновлении точек: {}", e.getMessage());
-            handleError(resp, 400, e.getMessage(), "/api/v1/points/update/batch/" + functionIdStr);
+            handleError(resp, 400, e.getMessage(), "/points/update/batch/" + functionIdStr);
         } catch (Exception e) {
             logger.error("Ошибка при массовом обновлении точек для функции {}: {}",
                     functionIdStr, e.getMessage(), e);
-            handleError(resp, 500, "Внутренняя ошибка сервера", "/api/v1/points/update/batch/" + functionIdStr);
+            handleError(resp, 500, "Внутренняя ошибка сервера", "/points/update/batch/" + functionIdStr);
         }
     }
 

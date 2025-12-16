@@ -325,7 +325,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/points/1' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/points/1' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				}
@@ -358,7 +358,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/api/users",
+							"raw": "{{baseURL}}/users",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -367,7 +367,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
+						"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:8080/users' \\\r\n  -H 'accept: application/json' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
 					},
 					"response": []
 				},
@@ -395,7 +395,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/api/users/1",
+							"raw": "{{baseURL}}/users/1",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -405,7 +405,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
+						"description": "Generated from cURL: curl -X 'PUT' \\\r\n  'http://localhost:8080/users/1' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"username\": \"jane_doe\",\r\n  \"passwordHash\": \"$2a$10$N9qo8uLOickgx2ZMRZoMy.MrY7W7Lc...\",\r\n  \"role\": \"ADMIN\"\r\n}'"
 					},
 					"response": []
 				},
@@ -420,7 +420,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseURL}}/api/users",
+							"raw": "{{baseURL}}/users",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -429,7 +429,7 @@
 								"users"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users' \\\r\n  -H 'accept: application/json'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/users' \\\r\n  -H 'accept: application/json'"
 					},
 					"response": []
 				},
@@ -444,7 +444,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseURL}}/api/users/1",
+							"raw": "{{baseURL}}/users/1",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -454,7 +454,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: application/json'"
+						"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:8080/users/1' \\\r\n  -H 'accept: application/json'"
 					},
 					"response": []
 				},
@@ -469,7 +469,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseURL}}/api/users/1",
+							"raw": "{{baseURL}}/users/1",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -479,7 +479,7 @@
 								"1"
 							]
 						},
-						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/api/users/1' \\\r\n  -H 'accept: */*'"
+						"description": "Generated from cURL: curl -X 'DELETE' \\\r\n  'http://localhost:8080/users/1' \\\r\n  -H 'accept: */*'"
 					},
 					"response": []
 				}
