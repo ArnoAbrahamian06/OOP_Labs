@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.example.DTO.Point.PointCreateDTO;
+import java.util.List;
 
 public class FunctionCreateRequest {
 
@@ -12,19 +15,15 @@ public class FunctionCreateRequest {
     @JsonProperty("ownerId")
     private Long ownerId;
 
-    @NotNull(message = "ID типа функции не может быть пустым")
-    @Min(value = 1, message = "ID типа функции должен быть положительным")
-    @JsonProperty("typeId")
-    private Integer typeId;
-
     @NotBlank(message = "Имя функции не может быть пустым")
     @Max(value = 100, message = "Имя функции не должно превышать 100 символов")
     @JsonProperty("name")
     private String name;
 
-    @NotBlank(message = "Сериализованные данные не могут быть пустыми")
-    @JsonProperty("serializedData")
-    private String serializedData;
+    @NotNull(message = "Точки не могут быть пустыми")
+    @Size(min = 2, message = "Должно быть минимум 2 точки")
+    @JsonProperty("points")
+    private List<PointCreateDTO> points;
 
     // Геттеры и сеттеры
     public Long getOwnerId() {
@@ -35,14 +34,6 @@ public class FunctionCreateRequest {
         this.ownerId = ownerId;
     }
 
-    public Integer getTypeId() {
-        return typeId;
-    }
-
-    public void setTypeId(Integer typeId) {
-        this.typeId = typeId;
-    }
-
     public String getName() {
         return name;
     }
@@ -51,21 +42,20 @@ public class FunctionCreateRequest {
         this.name = name;
     }
 
-    public String getSerializedData() {
-        return serializedData;
+    public List<PointCreateDTO> getPoints() {
+        return points;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setPoints(List<PointCreateDTO> points) {
+        this.points = points;
     }
 
     @Override
     public String toString() {
         return "FunctionCreateRequest{" +
                 "ownerId=" + ownerId +
-                ", typeId=" + typeId +
                 ", name='" + name + '\'' +
-                ", serializedData='" + serializedData + '\'' +
+                ", points=" + points +
                 '}';
     }
 }

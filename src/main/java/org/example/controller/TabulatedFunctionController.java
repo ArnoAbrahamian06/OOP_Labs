@@ -2,301 +2,490 @@ package org.example.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.example.DTO.OpenAPI.*;
 import org.example.DTO.TabulatedFunction.*;
-import jakarta.validation.Valid;
-import org.example.DTO.User.UserResponseDTO; // Для возврата информации о владельце
-import org.example.DTO.Point.PointDTO; // Для возврата точек
+import org.example.DTO.Point.PointCreateDTO;
+import org.example.DTO.Point.PointUpdateDTO;
+import org.example.DTO.User.UserResponseDTO;
+import org.example.entity.PointEntity;
 import org.example.entity.Tabulated_function;
 import org.example.entity.User;
 import org.example.entity.Role;
 import org.example.service.TabulatedFunctionService;
 import org.example.service.UserService;
+import org.example.service.PointService;
 import org.example.Mapper.TabulatedFunctionMapper;
-import org.example.Mapper.UserMapper; // Для маппинга владельца
-import org.example.Mapper.PointMapper; // Для маппинга точек
+import org.example.Mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import java.util.ArrayList;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @RestController
 @RequestMapping("/api/functions")
 @Tag(name = "Tabulated Functions", description = "CRUD операции с табулированными функциями")
+@Validated
 public class TabulatedFunctionController {
 
     private static final Logger log = LoggerFactory.getLogger(TabulatedFunctionController.class);
 
-    @Autowired
-    private TabulatedFunctionService tabulatedFunctionService;
+    private final TabulatedFunctionService tabulatedFunctionService;
+    private final UserService userService;
+    private final PointService pointService;
+    private final TabulatedFunctionMapper tabulatedFunctionMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    private UserService userService; // Для проверки владельца
-
-    @Autowired
-    private TabulatedFunctionMapper tabulatedFunctionMapper;
-
-    @Autowired
-    private UserMapper userMapper; // Для маппинга User в UserResponseDTO
-
-    @Autowired
-    private PointMapper pointMapper; // Для маппинга Point в PointDTO
+    public TabulatedFunctionController(
+            TabulatedFunctionService tabulatedFunctionService,
+            UserService userService,
+            PointService pointService,
+            TabulatedFunctionMapper tabulatedFunctionMapper,
+            UserMapper userMapper) {
+        this.tabulatedFunctionService = tabulatedFunctionService;
+        this.userService = userService;
+        this.pointService = pointService;
+        this.tabulatedFunctionMapper = tabulatedFunctionMapper;
+        this.userMapper = userMapper;
+    }
 
     // --- Создание функции ---
     @Operation(summary = "Создать функцию", description = "Создает новую функцию для текущего пользователя на основе списка точек.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Функция успешно создана",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = TabulatedFunctionResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Неверные данные запроса",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Запрещено: попытка создать функцию для другого пользователя",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Неавторизован",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping
-    public ResponseEntity<TabulatedFunctionResponseDTO> createFunction(@Valid @RequestBody FunctionCreateRequest request) {
+    public ResponseEntity<?> createFunction(
+            @Valid @RequestBody FunctionCreateRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Создание новой функции: {}", request.getName());
 
-        // 1. Получаем текущего аутентифицированного пользователя
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
+        try {
+            // 1. Проверка аутентификации
+            if (currentUser == null) {
+                log.warn("API: Попытка создания функции без аутентификации");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+            }
 
-        Optional<User> currentUserOpt = userService.findByUsername(currentUsername);
-        if (currentUserOpt.isEmpty()) {
-            // Это маловероятно, если пользователь аутентифицирован, но на всякий случай
-            log.error("API: Аутентифицированный пользователь '{}' не найден в базе данных!", currentUsername);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            // 2. Проверка прав доступа (принудительно устанавливаем ID текущего пользователя)
+            if (!request.getOwnerId().equals(currentUser.getId())) {
+                log.warn("API: Пользователь {} (ID: {}) пытается создать функцию для другого пользователя (ID: {})",
+                        currentUser.getUsername(), currentUser.getId(), request.getOwnerId());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ErrorResponse("Forbidden", "Нельзя создать функцию для другого пользователя",
+                                "requestedOwnerId=" + request.getOwnerId() + ", currentUserId=" + currentUser.getId()));
+            }
+
+            // 3. Валидация данных
+            if (request.getPoints() == null || request.getPoints().size() < 2) {
+                log.warn("API: Недостаточно точек для создания функции: {}",
+                        request.getPoints() != null ? request.getPoints().size() : 0);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ErrorResponse("InvalidData", "Должно быть минимум 2 точки", "points"));
+            }
+
+            // 4. Преобразование DTO в сущность
+            Tabulated_function function = new Tabulated_function();
+            function.setName(request.getName());
+            function.setUser(currentUser);
+
+            // 5. Создание и связывание точек с функцией
+            List<PointEntity> points = new ArrayList<>();
+            for (PointCreateDTO pointDto : request.getPoints()) {
+                PointEntity point = new PointEntity();
+                point.setX(pointDto.getX());
+                point.setY(pointDto.getY());
+                point.setTabulatedFunction(function);
+                points.add(point);
+            }
+            function.setPoints(points);
+
+            // 6. Сохранение функции (точки сохранятся каскадно благодаря CascadeType.ALL)
+            Tabulated_function savedFunction = tabulatedFunctionService.save(function);
+
+            if (savedFunction == null || savedFunction.getId() == null) {
+                log.error("API: Не удалось создать функцию. Сохраненная функция: {}", savedFunction);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ErrorResponse("InternalError", "Не удалось создать функцию", null));
+            }
+
+            // 7. Формирование ответа
+            TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(savedFunction);
+            log.info("API: Пользователь {} создал новую функцию (ID: {})",
+                    currentUser.getUsername(), savedFunction.getId());
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .header("Location", "/api/functions/" + savedFunction.getId())
+                    .body(responseDTO);
+
+        } catch (IllegalArgumentException e) {
+            log.error("API: Ошибка валидации при создании функции: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("InvalidData", e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("API: Ошибка при создании функции: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при создании функции", e.getMessage()));
         }
-        User currentUser = currentUserOpt.get();
-
-        // 2. Проверяем, совпадает ли запрашиваемый владелец (request.getOwnerId()) с текущим пользователем
-        if (!request.getOwnerId().equals(currentUser.getId())) {
-            log.warn("API: Попытка создать функцию пользователем {}, но ownerId в запросе {} не совпадает с ID пользователя {}", currentUsername, request.getOwnerId(), currentUser.getId());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
-
-        // --- ПРЕОБРАЗОВАНИЕ DTO ---
-        // Создаём внутреннее DTO из OpenAPI DTO
-        TabulatedFunctionCreateDTO internalCreateDTO = new TabulatedFunctionCreateDTO();
-        internalCreateDTO.setName(request.getName());
-        internalCreateDTO.setUserId(request.getOwnerId()); // ownerId из OpenAPI DTO -> userId во внутреннем DTO
-
-        // Преобразуем serializedData (предполагаем, что это строка в base64 или формате, который можно распарсить в List<PointDTO>)
-        // Тут нужна логика парсинга serializedData в List<PointDTO>
-        // PointDTO может быть List<PointDTO> points = parseSerializedData(request.getSerializedData());
-        // internalCreateDTO.setPoints(points); // <-- УСТАНОВИТЬ ТОЧКИ
-        // ПОКА ВРЕМЕННО ПУСТОЙ СПИСОК ИЛИ НУЛЬ, ЗАВИСИТ ОТ ЛОГИКИ
-        internalCreateDTO.setPoints(null); // или используйте логику парсинга
-
-        // --- /ПРЕОБРАЗОВАНИЕ DTO ---
-
-        // 3. Преобразуем внутреннее DTO в сущность через маппер (теперь принимает TabulatedFunctionCreateDTO)
-        Tabulated_function functionToSave = tabulatedFunctionMapper.toEntity(internalCreateDTO, currentUser); // <-- Передаём внутреннее DTO
-
-        // 4. Сохраняем функцию (и связанные точки через cascade)
-        Tabulated_function savedFunction = tabulatedFunctionService.save(functionToSave);
-
-        // 5. Преобразуем сущность в ResponseDTO
-        TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(savedFunction);
-
-        log.info("API: Функция с ID {} успешно создана пользователем {}", savedFunction.getId(), currentUsername);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .header("Location", "/api/functions/" + savedFunction.getId())
-                .body(responseDTO);
     }
 
     // --- Получение функции по ID (только владельцу) ---
     @Operation(summary = "Получить функцию по ID", description = "Возвращает детальную информацию о функции, включая точки.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Функция успешно найдена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = TabulatedFunctionResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Запрещено: доступ только владельцу",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Функция не найдена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<TabulatedFunctionResponseDTO> getTabulatedFunctionById(@PathVariable Long id) {
+    public ResponseEntity<?> getTabulatedFunctionById(
+            @Parameter(description = "ID функции", required = true) @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Запрос на получение функции с ID: {}", id);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+        }
 
         Optional<Tabulated_function> funcOpt = tabulatedFunctionService.findById(id);
         if (funcOpt.isEmpty()) {
             log.debug("API: Функция с ID {} не найдена", id);
-            return ResponseEntity.notFound().build(); // 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("NotFound", "Функция с ID " + id + " не найдена", null));
         }
 
         Tabulated_function func = funcOpt.get();
 
-        // --- ПРОВЕРКА ВЛАДЕЛЬЦА ---
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        if (!func.getUser().getUsername().equals(currentUsername)) {
-            log.warn("API: Попытка доступа к функции ID {} пользователем {}, который не является владельцем", id, currentUsername);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
+        if (!func.getUser().getId().equals(currentUser.getId())) {
+            log.warn("API: Пользователь {} (ID: {}) пытается получить доступ к функции ID {} владельца {} (ID: {})",
+                    currentUser.getUsername(), currentUser.getId(),
+                    id, func.getUser().getUsername(), func.getUser().getId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse("Forbidden", "Доступ запрещен: вы не являетесь владельцем этой функции",
+                            "functionId=" + id + ", ownerId=" + func.getUser().getId()));
         }
-        // --- /ПРОВЕРКА ВЛАДЕЛЬЦА ---
 
-        TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(func);
-        return ResponseEntity.ok(responseDTO);
+        try {
+            TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(func);
+            return ResponseEntity.ok(responseDTO);
+        } catch (Exception e) {
+            log.error("API: Ошибка при преобразовании функции ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при обработке данных функции", e.getMessage()));
+        }
     }
 
     // --- Обновление функции (только владельцу) ---
-    @Operation(summary = "Обновить функцию", description = "Обновляет метаданные или точки функции.")
+    @Operation(summary = "Обновить функцию", description = "Обновляет метаданные и/или точки функции.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Функция успешно обновлена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = TabulatedFunctionResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Неверные данные запроса",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Запрещено: доступ только владельцу",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Функция не найдена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<TabulatedFunctionResponseDTO> updateTabulatedFunction(@PathVariable Long id, @RequestBody FunctionUpdateRequest request) {
+    public ResponseEntity<?> updateTabulatedFunction(
+            @Parameter(description = "ID функции", required = true) @PathVariable Long id,
+            @Valid @RequestBody FunctionUpdateRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Обновление функции с ID: {}", id);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+        }
 
         Optional<Tabulated_function> existingFuncOpt = tabulatedFunctionService.findById(id);
         if (existingFuncOpt.isEmpty()) {
             log.debug("API: Функция с ID {} не найдена для обновления", id);
-            return ResponseEntity.notFound().build(); // 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("NotFound", "Функция с ID " + id + " не найдена", null));
         }
 
         Tabulated_function existingFunc = existingFuncOpt.get();
 
-        // --- ПРОВЕРКА ВЛАДЕЛЬЦА ---
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        if (!existingFunc.getUser().getUsername().equals(currentUsername)) {
-            log.warn("API: Попытка обновления функции ID {} пользователем {}, который не является владельцем", id, currentUsername);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
+        if (!existingFunc.getUser().getId().equals(currentUser.getId())) {
+            log.warn("API: Пользователь {} (ID: {}) пытается обновить функцию ID {} владельца {} (ID: {})",
+                    currentUser.getUsername(), currentUser.getId(),
+                    id, existingFunc.getUser().getUsername(), existingFunc.getUser().getId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse("Forbidden", "Нельзя обновить функцию другого пользователя",
+                            "functionId=" + id + ", ownerId=" + existingFunc.getUser().getId()));
         }
 
-        // --- ПРЕОБРАЗОВАНИЕ DTO ---
-        // Преобразуем OpenAPI DTO в внутреннее DTO
-        TabulatedFunctionUpdateDTO internalUpdateDTO = new TabulatedFunctionUpdateDTO();
-        internalUpdateDTO.setName(request.getName());
-        // internalUpdateDTO.setPoints(request.getPoints()); // Установить точки, если переданы
-        // ... (логика обновления точек из request.getPoints() должна быть в маппере или сервисе)
+        try {
+            if (request.getPoints() != null && request.getPoints().size() < 2) {
+                log.warn("API: Попытка обновить функцию ID {} с недостаточным количеством точек: {}",
+                        id, request.getPoints().size());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ErrorResponse("InvalidData", "Должно быть минимум 2 точки",
+                                "points.size=" + request.getPoints().size()));
+            }
 
-        // Обновляем сущность, используя внутреннее DTO и маппер
-        tabulatedFunctionMapper.partialUpdateFromDTO(internalUpdateDTO, existingFunc); // <-- Передаём внутреннее DTO
+            // Обновляем имя
+            if (request.getName() != null) {
+                existingFunc.setName(request.getName());
+            }
 
-        Tabulated_function updatedFunction = tabulatedFunctionService.save(existingFunc);
+            // Обновляем точки, если они переданы
+            if (request.getPoints() != null) {
+                // Удаляем старые точки
+                pointService.deleteByTabulatedFunctionId(id);
 
-        TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(updatedFunction);
+                // Создаем новые точки
+                final Tabulated_function finalExistingFunc = existingFunc;
+                List<PointEntity> newPoints = request.getPoints().stream()
+                        .map(pointUpdateDTO -> {
+                            PointEntity point = new PointEntity();
+                            point.setX(pointUpdateDTO.getX());
+                            point.setY(pointUpdateDTO.getY());
+                            point.setTabulatedFunction(finalExistingFunc);
+                            return point;
+                        })
+                        .collect(Collectors.toList());
 
-        log.info("API: Функция с ID {} успешно обновлена пользователем {}", updatedFunction.getId(), currentUsername);
-        return ResponseEntity.ok(responseDTO);
+                // Сохраняем новые точки
+                pointService.saveAll(newPoints);
+                existingFunc.setPoints(newPoints);
+            }
+
+            // Сохраняем обновленную функцию
+            Tabulated_function updatedFunction = tabulatedFunctionService.save(existingFunc);
+
+            TabulatedFunctionResponseDTO responseDTO = tabulatedFunctionMapper.toResponseDTO(updatedFunction);
+            log.info("API: Функция с ID {} успешно обновлена пользователем {}. Обновлено: имя={}, точки={}",
+                    updatedFunction.getId(), currentUser.getUsername(),
+                    request.getName() != null,
+                    request.getPoints() != null);
+
+            return ResponseEntity.ok(responseDTO);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("API: Неверные данные при обновлении функции ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("InvalidData", e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("API: Ошибка при обновлении функции ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при обновлении функции", e.getMessage()));
+        }
     }
 
     // --- Удаление функции (только владельцу) ---
-    @Operation(summary = "Удалить функцию", description = "Удаляет функцию по ID. Доступно владельцу или администратору.")
+    @Operation(summary = "Удалить функцию", description = "Удаляет функцию по ID. Доступно только владельцу.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Функция успешно удалена"),
+            @ApiResponse(responseCode = "403", description = "Запрещено: доступ только владельцу",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Функция не найдена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFunction(@PathVariable Long id) {
+    public ResponseEntity<?> deleteFunction(
+            @Parameter(description = "ID функции", required = true) @PathVariable Long id,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Запрос на удаление функции с ID: {}", id);
+
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+        }
 
         Optional<Tabulated_function> funcOpt = tabulatedFunctionService.findById(id);
         if (funcOpt.isEmpty()) {
             log.debug("API: Функция с ID {} не найдена для удаления", id);
-            return ResponseEntity.notFound().build(); // 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("NotFound", "Функция с ID " + id + " не найдена", null));
         }
 
         Tabulated_function func = funcOpt.get();
 
-        // --- ПРОВЕРКА ВЛАДЕЛЬЦА ---
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        if (!func.getUser().getUsername().equals(currentUsername)) {
-            log.warn("API: Попытка удаления функции ID {} пользователем {}, который не является владельцем", id, currentUsername);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
+        if (!func.getUser().getId().equals(currentUser.getId())) {
+            log.warn("API: Пользователь {} (ID: {}) пытается удалить функцию ID {} владельца {} (ID: {})",
+                    currentUser.getUsername(), currentUser.getId(),
+                    id, func.getUser().getUsername(), func.getUser().getId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse("Forbidden", "Нельзя удалить функцию другого пользователя",
+                            "functionId=" + id + ", ownerId=" + func.getUser().getId()));
         }
 
-        tabulatedFunctionService.deleteById(id);
-
-        log.info("API: Функция с ID {} успешно удалена пользователем {}", id, currentUsername);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        try {
+            // Сначала удаляем точки
+            pointService.deleteByTabulatedFunctionId(id);
+            tabulatedFunctionService.deleteById(id);
+            log.info("API: Функция с ID {} успешно удалена пользователем {}", id, currentUser.getUsername());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("API: Ошибка при удалении функции ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при удалении функции", e.getMessage()));
+        }
     }
 
     // --- Получить все функции текущего пользователя ---
     @Operation(summary = "Функции текущего пользователя", description = "Возвращает список функций, созданных авторизованным пользователем.")
-    @GetMapping("/owner/me") // Более явный путь для "моих" функций
-    public ResponseEntity<List<TabulatedFunctionListDTO>> getFunctionsForCurrentUser() {
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список функций успешно получен",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = TabulatedFunctionListDTO.class)))),
+            @ApiResponse(responseCode = "401", description = "Неавторизован",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/owner/me")
+    public ResponseEntity<?> getFunctionsForCurrentUser(
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Запрос на получение всех функций текущего пользователя");
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        Optional<User> currentUserOpt = userService.findByUsername(currentUsername);
-        if (currentUserOpt.isEmpty()) {
-            // См. комментарий в createFunction
-            log.error("API: Аутентифицированный пользователь '{}' не найден в базе данных!", currentUsername);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
         }
-        User currentUser = currentUserOpt.get();
 
-        List<Tabulated_function> userFunctions = tabulatedFunctionService.findByUserId(currentUser.getId());
-        List<TabulatedFunctionListDTO> responseDTOs = userFunctions.stream()
-                .map(tabulatedFunctionMapper::toListDTO) // Используем toListDTO для краткой информации
-                .collect(Collectors.toList());
+        try {
+            List<Tabulated_function> userFunctions = tabulatedFunctionService.findByUserId(currentUser.getId());
+            List<TabulatedFunctionListDTO> responseDTOs = userFunctions.stream()
+                    .map(tabulatedFunctionMapper::toListDTO)
+                    .collect(Collectors.toList());
 
-        log.debug("API: Отправлен список {} функций пользователю {}", responseDTOs.size(), currentUsername);
-        return ResponseEntity.ok(responseDTOs);
+            log.debug("API: Отправлен список {} функций пользователю {}", responseDTOs.size(), currentUser.getUsername());
+            return ResponseEntity.ok(responseDTOs);
+        } catch (Exception e) {
+            log.error("API: Ошибка при получении функций пользователя {}: {}",
+                    currentUser.getUsername(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при получении списка функций", e.getMessage()));
+        }
     }
 
-    // --- Получить функции конкретного пользователя ---
-    // Этот эндпоинт позволяет *любому* аутентифицированному пользователю
-    // просматривать *все* функции *другого* пользователя по его ID.
-    @Operation(summary = "Функции конкретного пользователя", description = "Поиск всех функций по ID создателя (для админов/модераторов).")
+    // --- Получить функции конкретного пользователя (для админов) ---
+    @Operation(summary = "Функции конкретного пользователя", description = "Поиск всех функций по ID создателя (только для администраторов).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список функций успешно получен",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = TabulatedFunctionListDTO.class)))),
+            @ApiResponse(responseCode = "403", description = "Запрещено: только для администраторов",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/owner/{userId}")
-    public ResponseEntity<List<TabulatedFunctionListDTO>> getFunctionsByUserId(
-            @Parameter(description = "ID пользователя") @PathVariable Long userId) {
+    public ResponseEntity<?> getFunctionsByUserId(
+            @Parameter(description = "ID пользователя", required = true) @PathVariable Long userId,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Запрос на получение функций пользователя с ID: {}", userId);
 
-        // Проверка существования пользователя (опционально, но полезно)
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+        }
+
+        if (!currentUser.getId().equals(userId) && currentUser.getRole() != Role.ADMIN) {
+            log.warn("API: Пользователь {} (ID: {}, роль: {}) пытается получить функции пользователя ID {} без прав",
+                    currentUser.getUsername(), currentUser.getId(), currentUser.getRole(), userId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse("Forbidden", "Доступ запрещен: только администраторы или сам пользователь",
+                            "requestedUserId=" + userId + ", currentUserRole=" + currentUser.getRole()));
+        }
+
         if (!userService.existsById(userId)) {
-            log.warn("FunctionRetrieval: Запрошены функции для пользователя ID: {}, но пользователь не найден.", userId);
-            return ResponseEntity.notFound().build(); // 404 Not Found
+            log.warn("API: Запрошены функции для несуществующего пользователя ID: {}", userId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("NotFound", "Пользователь с ID " + userId + " не найден", null));
         }
 
-        // ПРОВЕРКА ПРАВ (например, администратор или текущий пользователь)
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
+        try {
+            List<Tabulated_function> functions = tabulatedFunctionService.findByUserId(userId);
+            List<TabulatedFunctionListDTO> responseDTOs = functions.stream()
+                    .map(tabulatedFunctionMapper::toListDTO)
+                    .collect(Collectors.toList());
 
-        // Проверяем, является ли текущий пользователь владельцем или администратором
-        Optional<User> requestingUserOpt = userService.findByUsername(currentUsername);
-        if (requestingUserOpt.isEmpty()) {
-            log.error("API: Аутентифицированный пользователь '{}' не найден в базе данных!", currentUsername);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            log.debug("API: Отправлен список {} функций пользователю {} для владельца ID: {}",
+                    responseDTOs.size(), currentUser.getUsername(), userId);
+            return ResponseEntity.ok(responseDTOs);
+        } catch (Exception e) {
+            log.error("API: Ошибка при получении функций пользователя ID {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при получении списка функций", e.getMessage()));
         }
-        User requestingUser = requestingUserOpt.get();
-
-        boolean isOwner = requestingUser.getId().equals(userId);
-        boolean isAdmin = requestingUser.getRole() == Role.ADMIN;
-
-        if (!isOwner && !isAdmin) {
-            log.warn("FunctionRetrieval: Пользователь {} пытается получить функции другого пользователя (ID: {}) без прав администратора.", currentUsername, userId);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        }
-
-        List<Tabulated_function> functions = tabulatedFunctionService.findByUserId(userId);
-        List<TabulatedFunctionListDTO> responseDTOs = functions.stream()
-                .map(tabulatedFunctionMapper::toListDTO)
-                .collect(Collectors.toList());
-
-        log.debug("API: Отправлен список {} функций пользователю {} для владельца ID: {}", responseDTOs.size(), currentUsername, userId);
-        return ResponseEntity.ok(responseDTOs);
     }
 
     // --- Получить функции по имени (частичное совпадение) ---
     @Operation(summary = "Поиск функций по имени", description = "Возвращает функции, имя которых содержит указанную подстроку.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список функций успешно получен",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = TabulatedFunctionListDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Неверные параметры запроса",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/by-name")
-    public ResponseEntity<List<TabulatedFunctionListDTO>> getFunctionsByNameContaining(
-            @Parameter(description = "Часть имени функции") @RequestParam String name) {
+    public ResponseEntity<?> getFunctionsByNameContaining(
+            @Parameter(description = "Часть имени функции", required = true, example = "sin")
+            @RequestParam String name,
+            @Parameter(hidden = true) @AuthenticationPrincipal User currentUser
+    ) {
         log.info("API: Запрос на получение функций, имя которых содержит: {}", name);
 
-        // Проверка аутентификации уже выполнена через SecurityConfig для /api/**
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
+        }
 
-        List<Tabulated_function> functions = tabulatedFunctionService.findByNameContaining(name);
-        List<TabulatedFunctionListDTO> responseDTOs = functions.stream()
-                .map(tabulatedFunctionMapper::toListDTO)
-                .collect(Collectors.toList());
+        if (name == null || name.trim().isEmpty()) {
+            log.warn("API: Пустой параметр поиска имени");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("InvalidParameter", "Параметр 'name' не может быть пустым", null));
+        }
 
-        log.debug("API: Отправлен список {} функций, имя которых содержит '{}'", responseDTOs.size(), name);
-        return ResponseEntity.ok(responseDTOs);
+        try {
+            List<Tabulated_function> functions = tabulatedFunctionService.findByNameContaining(name.trim());
+            List<TabulatedFunctionListDTO> responseDTOs = functions.stream()
+                    .map(tabulatedFunctionMapper::toListDTO)
+                    .collect(Collectors.toList());
+
+            log.debug("API: Отправлен список {} функций, имя которых содержит '{}'", responseDTOs.size(), name);
+            return ResponseEntity.ok(responseDTOs);
+        } catch (Exception e) {
+            log.error("API: Ошибка при поиске функций по имени '{}': {}", name, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("InternalError", "Ошибка при поиске функций", e.getMessage()));
+        }
     }
-
-    // --- Поиск функций по типу точки (например, X или Y в диапазоне - пример сложного поиска) ---
-    // @GetMapping("/search/complex")
-    // public ResponseEntity<List<FunctionListDTO>> searchComplexly(@RequestParam Double minX, @RequestParam Double maxX) {
-    //     // ... логика поиска ...
-    //     // Проверка аутентификации уже выполнена
-    //     // ...
-    // }
 }

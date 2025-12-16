@@ -6,8 +6,8 @@ import org.example.functions.factory.TabulatedFunctionFactory;
 import org.example.io.FunctionsIO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger; // НОВЫЙ ИМПОРТ
-import org.slf4j.LoggerFactory; // НОВЫЙ ИМПОРТ
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.ParseException;

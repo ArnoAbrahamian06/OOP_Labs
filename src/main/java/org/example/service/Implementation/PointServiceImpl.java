@@ -129,4 +129,18 @@ public class PointServiceImpl implements PointService {
         log.debug("Found {} points for function ID {}", count, tabulatedFunctionId);
         return count;
     }
+
+    @Override
+    @Transactional
+    public List<PointEntity> saveAll(List<PointEntity> points) {
+        log.info("saving points for all points: {}", points);
+        return pointRepository.saveAll(points);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByTabulatedFunctionId(Long tabulatedFunctionId) {
+        log.info("Deleting points for TabulatedFunction ID: {}", tabulatedFunctionId);
+        pointRepository.deleteByTabulatedFunctionId(tabulatedFunctionId);
+    }
 }

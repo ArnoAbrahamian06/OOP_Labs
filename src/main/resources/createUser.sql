@@ -1,1 +1,0 @@
-INSERT INTO users (username, role, password_hash) VALUES (?, ?, ?);

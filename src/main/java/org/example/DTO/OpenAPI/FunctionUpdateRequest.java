@@ -2,7 +2,10 @@ package org.example.DTO.OpenAPI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.example.DTO.Point.PointUpdateDTO;
+import java.util.List;
 
 public class FunctionUpdateRequest {
 
@@ -10,8 +13,10 @@ public class FunctionUpdateRequest {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("serializedData")
-    private String serializedData;
+    @NotNull(message = "Точки не могут быть пустыми")
+    @Size(min = 2, message = "Должно быть минимум 2 точки")
+    @JsonProperty("points")
+    private List<PointUpdateDTO> points;
 
     // Геттеры и сеттеры
     public String getName() {
@@ -22,19 +27,19 @@ public class FunctionUpdateRequest {
         this.name = name;
     }
 
-    public String getSerializedData() {
-        return serializedData;
+    public List<PointUpdateDTO> getPoints() {
+        return points;
     }
 
-    public void setSerializedData(String serializedData) {
-        this.serializedData = serializedData;
+    public void setPoints(List<PointUpdateDTO> points) {
+        this.points = points;
     }
 
     @Override
     public String toString() {
         return "FunctionUpdateRequest{" +
                 "name='" + name + '\'' +
-                ", serializedData='" + serializedData + '\'' +
+                ", points=" + points +
                 '}';
     }
 }

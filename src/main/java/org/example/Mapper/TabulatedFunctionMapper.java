@@ -245,7 +245,6 @@ public class TabulatedFunctionMapper {
         }
 
         // ИСПОЛЬЗУЕМ: createStrictUnmodifiable
-        // ПЕРЕМЕННАЯ externalFunctionFactory ДОСТУПНА ЗДЕСЬ, потому что она объявлена в классе
         TabulatedFunction externalFunc = externalFunctionFactory.createStrictUnmodifiable(xValues, yValues);
         return externalFunc;
     }

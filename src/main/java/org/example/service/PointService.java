@@ -10,6 +10,10 @@ public interface PointService {
     PointEntity save(PointEntity point);
     void deleteById(Long id);
 
+    // --- Новые методы ---
+    List<PointEntity> saveAll(List<PointEntity> points);
+    void deleteByTabulatedFunctionId(Long tabulatedFunctionId);
+
     // --- Дополнительные методы ---
     // Найти все точки для конкретной табулированной функции (по ID функции)
     List<PointEntity> findByTabulatedFunctionId(Long tabulatedFunctionId);

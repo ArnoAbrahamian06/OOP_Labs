@@ -25,12 +25,7 @@ public class DifferentiationService {
     @Autowired
     private TabulatedFunctionMapper tabulatedFunctionMapper; // Для конвертации
 
-    // Внедряем или создаём TabulatedDifferentialOperator
-    // Внедрение зависимости возможно, если TabulatedDifferentialOperator сам будет Spring-бином
-    // или если его зависимости (TabulatedFunctionFactory) будут настроены.
-    // Для простоты, создадим его здесь с фабрикой.
-    // ПРИМЕЧАНИЕ: TabulatedDifferentialOperator НЕ использует DerivativeMethod!
-    // Он всегда применяет один фиксированный метод.
+
     private final TabulatedDifferentialOperator differentialOperator =
             new TabulatedDifferentialOperator(); // Использует фабрику по умолчанию
 

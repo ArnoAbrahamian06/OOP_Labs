@@ -15,6 +15,9 @@ public interface PointRepository extends JpaRepository<PointEntity, Long> { // I
     // Найти все точки для конкретной табулированной функции (по ID функции)
     List<PointEntity> findByTabulatedFunctionId(Long tabulatedFunctionId);
 
+    // Удаление точек по TabulatedID
+    void deleteByTabulatedFunctionId(Long tabulatedFunctionId);
+
     // Найти все точки с определённым значением X
     List<PointEntity> findByX(Double x);
 
