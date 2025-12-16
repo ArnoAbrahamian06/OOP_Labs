@@ -1,6 +1,8 @@
 package org.example.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.example.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,16 @@ import java.io.IOException;
 
 public abstract class BaseServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    protected final ObjectMapper objectMapper = createObjectMapper();
+
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // Регистрируем модуль для поддержки Java 8 Date/Time
+        mapper.registerModule(new JavaTimeModule());
+        // Отключаем запись дат как timestamp (будет читаемый ISO формат)
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
     protected void writeJson(HttpServletResponse resp, int status, Object obj) throws IOException {
         resp.setStatus(status);
