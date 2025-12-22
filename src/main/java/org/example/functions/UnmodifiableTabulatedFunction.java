@@ -3,10 +3,11 @@ package org.example.functions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class UnmodifiableTabulatedFunction implements TabulatedFunction {
+public class UnmodifiableTabulatedFunction implements TabulatedFunction, Serializable {
     private static final Logger log = LoggerFactory.getLogger(UnmodifiableTabulatedFunction.class);
     private final TabulatedFunction function;
 

@@ -2,6 +2,7 @@ package org.example.DTO.OpenAPI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.example.DTO.Point.PointUpdateDTO;
@@ -9,7 +10,8 @@ import java.util.List;
 
 public class FunctionUpdateRequest {
 
-    @Max(value = 100, message = "Имя функции не должно превышать 100 символов")
+    @NotBlank(message = "Имя функции не может быть пустым")
+    @Size(min = 1, max = 100, message = "Имя функции должно быть от 1 до 100 символов")
     @JsonProperty("name")
     private String name;
 

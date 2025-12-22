@@ -3,7 +3,9 @@ package org.example.functions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StrictTabulatedFunction implements TabulatedFunction {
+import java.io.Serializable;
+
+public class StrictTabulatedFunction implements TabulatedFunction, Serializable {
     private static final Logger log = LoggerFactory.getLogger(StrictTabulatedFunction.class);
     private final TabulatedFunction function;
 

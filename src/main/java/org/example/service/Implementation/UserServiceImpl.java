@@ -18,7 +18,7 @@ import java.util.Optional;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class); // НОВОЕ ПОЛЕ
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserRepository userRepository;

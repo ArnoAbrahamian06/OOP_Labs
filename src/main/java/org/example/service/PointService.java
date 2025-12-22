@@ -1,5 +1,8 @@
 package org.example.service;
 
+import org.example.DTO.Point.PointBatchUpdateItemDTO;
+import org.example.DTO.Point.PointCreateDTO;
+import org.example.DTO.Point.PointUpdateDTO;
 import org.example.entity.PointEntity;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +13,18 @@ public interface PointService {
     PointEntity save(PointEntity point);
     void deleteById(Long id);
 
-    // --- Новые методы ---
+    /**
+     * Массовое обновление точек.
+     * @param updates список DTO с новыми значениями X и Y для обновления.
+     */
+    void batchUpdatePoints(List<PointBatchUpdateItemDTO> updates);
+
+    /**
+     * Массовое создание точек.
+     * @param creates список DTO с координатами X и Y и ID функции.
+     */
+    void batchCreatePoints(List<PointCreateDTO> creates);
+
     List<PointEntity> saveAll(List<PointEntity> points);
     void deleteByTabulatedFunctionId(Long tabulatedFunctionId);
 

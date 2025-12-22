@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,6 +34,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.util.ArrayList;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/functions")
 @Tag(name = "Tabulated Functions", description = "CRUD операции с табулированными функциями")
 @Validated
+@SecurityRequirement(name = "bearerAuth")
 public class TabulatedFunctionController {
 
     private static final Logger log = LoggerFactory.getLogger(TabulatedFunctionController.class);
@@ -91,6 +94,7 @@ public class TabulatedFunctionController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new ErrorResponse("Unauthorized", "Необходима аутентификация", null));
             }
+            log.info("текущий пользователь: {}", currentUser);
 
             // 2. Проверка прав доступа (принудительно устанавливаем ID текущего пользователя)
             if (!request.getOwnerId().equals(currentUser.getId())) {
@@ -263,24 +267,85 @@ public class TabulatedFunctionController {
 
             // Обновляем точки, если они переданы
             if (request.getPoints() != null) {
-                // Удаляем старые точки
-                pointService.deleteByTabulatedFunctionId(id);
+                log.info("API: Начало обновления точек для функции ID: {}. Количество новых точек: {}",
+                        id, request.getPoints().size());
 
-                // Создаем новые точки
-                final Tabulated_function finalExistingFunc = existingFunc;
-                List<PointEntity> newPoints = request.getPoints().stream()
-                        .map(pointUpdateDTO -> {
-                            PointEntity point = new PointEntity();
-                            point.setX(pointUpdateDTO.getX());
-                            point.setY(pointUpdateDTO.getY());
-                            point.setTabulatedFunction(finalExistingFunc);
-                            return point;
-                        })
-                        .collect(Collectors.toList());
+                // 1. Получаем текущую коллекцию точек
+                List<PointEntity> existingPoints = existingFunc.getPoints();
+                log.debug("API: Текущее количество точек в функции ID {}: {}",
+                        id, existingPoints.size());
 
-                // Сохраняем новые точки
-                pointService.saveAll(newPoints);
-                existingFunc.setPoints(newPoints);
+                // 2. Создаем маппинг для быстрого поиска
+                log.debug("API: Создание маппинга новых точек");
+                Map<String, PointEntity> newPointsMap = request.getPoints().stream()
+                        .collect(Collectors.toMap(
+                                dto -> String.format("%.6f_%.6f", dto.getX(), dto.getY()), // Форматируем double в строку
+                                dto -> {
+                                    PointEntity point = new PointEntity();
+                                    point.setX(dto.getX());
+                                    point.setY(dto.getY());
+                                    point.setTabulatedFunction(existingFunc);
+                                    log.trace("API: Создана новая точка: x={}, y={}", dto.getX(), dto.getY());
+                                    return point;
+                                },
+                                (p1, p2) -> p1
+                        ));
+                log.debug("API: Создано {} уникальных точек в маппинге", newPointsMap.size());
+
+                // 3. Ищем точки для удаления (те, которых нет в новых данных)
+                log.debug("API: Поиск точек для удаления");
+                List<PointEntity> pointsToRemove = new ArrayList<>();
+                for (PointEntity existingPoint : existingPoints) {
+                    String key = String.format("%.6f_%.6f", existingPoint.getX(), existingPoint.getY()); // Форматируем double в строку
+                    if (!newPointsMap.containsKey(key)) {
+                        pointsToRemove.add(existingPoint);
+                        log.debug("API: Точка для удаления: x={}, y={}",
+                                existingPoint.getX(), existingPoint.getY());
+                    }
+                }
+                log.info("API: Найдено точек для удаления: {}", pointsToRemove.size());
+
+                // 4. Удаляем старые точки из коллекции
+                log.debug("API: Удаление точек из коллекции");
+                int beforeRemoveCount = existingPoints.size();
+                existingPoints.removeAll(pointsToRemove);
+                log.info("API: Удалено точек: {}. Осталось точек после удаления: {}",
+                        pointsToRemove.size(), existingPoints.size());
+
+                // 5. Добавляем новые точки
+                log.debug("API: Добавление новых точек");
+                int addedPoints = 0;
+                int skippedPoints = 0;
+
+                for (PointEntity newPoint : newPointsMap.values()) {
+                    // Проверяем, не существует ли уже такая точка (сравниваем double через допуск)
+                    boolean exists = existingPoints.stream()
+                            .anyMatch(p ->
+                                    Math.abs(p.getX() - newPoint.getX()) < 0.000001 &&
+                                            Math.abs(p.getY() - newPoint.getY()) < 0.000001
+                            );
+                    if (!exists) {
+                        existingPoints.add(newPoint);
+                        addedPoints++;
+                        log.trace("API: Добавлена новая точка: x={}, y={}",
+                                newPoint.getX(), newPoint.getY());
+                    } else {
+                        skippedPoints++;
+                        log.trace("API: Точка уже существует, пропущена: x={}, y={}",
+                                newPoint.getX(), newPoint.getY());
+                    }
+                }
+
+                log.info("API: Добавлено новых точек: {}, пропущено дубликатов: {}",
+                        addedPoints, skippedPoints);
+                log.info("API: Общее количество точек после обновления: {}", existingPoints.size());
+
+                // 6. Обновляем ссылку на коллекцию (Hibernate требует это)
+                log.debug("API: Обновление ссылки на коллекцию точек");
+                existingFunc.setPoints(existingPoints);
+
+                log.info("API: Обновление точек для функции ID {} завершено. Итоговое количество точек: {}",
+                        id, existingFunc.getPoints().size());
             }
 
             // Сохраняем обновленную функцию

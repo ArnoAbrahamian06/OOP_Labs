@@ -2,6 +2,7 @@ package org.example.DTO.TabulatedFunction;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.example.DTO.Point.PointDTO;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,7 @@ public class TabulatedFunctionDTO {
     private Long id;
 
     @NotBlank(message = "Имя функции не может быть пустым")
+    @Size(min = 1, max = 100, message = "Имя функции должно быть от 1 до 100 символов")
     private String name;
 
     private LocalDateTime createdAt;

@@ -7,9 +7,9 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "points", indexes = {
-        @Index(name = "idx_point_function_id", columnList = "function_id"),
-        @Index(name = "idx_point_x", columnList = "x"),
-        @Index(name = "idx_point_y", columnList = "y")
+        @Index(name = "idx_point_f_id", columnList = "f_id"),
+        @Index(name = "idx_point_x", columnList = "x_value"),
+        @Index(name = "idx_point_y", columnList = "y_value")
 })
 public class PointEntity {
 
@@ -17,14 +17,14 @@ public class PointEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Автоинкремент
     private Long id;
 
-    @Column(name = "x", nullable = false)
+    @Column(name = "x_value", nullable = false)
     private double x;
 
-    @Column(name = "y", nullable = false)
+    @Column(name = "y_value", nullable = false)
     private double y;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "function_id", nullable = false)
+    @JoinColumn(name = "f_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Tabulated_function tabulatedFunction;
 

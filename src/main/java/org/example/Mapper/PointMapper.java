@@ -83,4 +83,17 @@ public class PointMapper {
         // tabulatedFunctionId не обновляется
         return existingEntity;
     }
+
+    // Преобразование PointCreateDTO -> PointEntity (новое тело)
+    public PointEntity toEntityFromCreateDTO(PointCreateDTO dto, Tabulated_function tabulatedFunction) {
+        if (dto == null || tabulatedFunction == null) {
+            return null;
+        }
+
+        PointEntity entity = new PointEntity();
+        entity.setX(dto.getX());
+        entity.setY(dto.getY());
+        entity.setTabulatedFunction(tabulatedFunction); // Устанавливаем связь
+        return entity;
+    }
 }

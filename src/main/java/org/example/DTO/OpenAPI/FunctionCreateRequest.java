@@ -16,7 +16,7 @@ public class FunctionCreateRequest {
     private Long ownerId;
 
     @NotBlank(message = "Имя функции не может быть пустым")
-    @Max(value = 100, message = "Имя функции не должно превышать 100 символов")
+    @Size(min = 1, max = 100, message = "Имя функции должно быть от 1 до 100 символов")
     @JsonProperty("name")
     private String name;
 

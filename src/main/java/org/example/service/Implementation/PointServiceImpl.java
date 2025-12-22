@@ -1,14 +1,20 @@
 package org.example.service.Implementation;
 
+import org.example.DTO.Point.PointCreateDTO;
 import org.example.entity.PointEntity;
+import org.example.entity.Tabulated_function;
 import org.example.repository.PointRepository;
 import org.example.service.PointService;
+import org.example.service.TabulatedFunctionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.example.DTO.Point.PointBatchUpdateItemDTO;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +26,9 @@ public class PointServiceImpl implements PointService {
 
     @Autowired
     private PointRepository pointRepository;
+    @Autowired
+    private TabulatedFunctionService tabulatedFunctionService;
+
 
     @Override
     public List<PointEntity> findAll() {
@@ -142,5 +151,91 @@ public class PointServiceImpl implements PointService {
     public void deleteByTabulatedFunctionId(Long tabulatedFunctionId) {
         log.info("Deleting points for TabulatedFunction ID: {}", tabulatedFunctionId);
         pointRepository.deleteByTabulatedFunctionId(tabulatedFunctionId);
+    }
+
+    @Override
+    @Transactional
+    public void batchUpdatePoints(List<PointBatchUpdateItemDTO> updates) {
+        log.info("Начало массового обновления {} точек.", updates.size());
+
+        if (updates.isEmpty()) {
+            log.warn("Список обновлений пуст.");
+            return;
+        }
+
+        List<Long> ids = updates.stream().map(PointBatchUpdateItemDTO::getId).collect(Collectors.toList());
+
+        // Загружаем только те точки, ID которых есть в списке
+        List<PointEntity> entitiesToUpdate = pointRepository.findAllById(ids);
+
+        if (entitiesToUpdate.size() != ids.size()) {
+            log.error("Не все точки найдены по предоставленным ID. Запрошено: {}, Найдено: {}", ids.size(), entitiesToUpdate.size());
+            throw new RuntimeException("Некоторые точки не найдены для обновления.");
+        }
+
+        // Создаем мапу ID -> Entity для быстрого доступа
+        Map<Long, PointEntity> entityMap = entitiesToUpdate.stream()
+                .collect(Collectors.toMap(PointEntity::getId, e -> e));
+
+        // Применяем обновления
+        for (PointBatchUpdateItemDTO updateDto : updates) {
+            PointEntity entity = entityMap.get(updateDto.getId());
+            if (entity != null) {
+                entity.setX(updateDto.getX());
+                entity.setY(updateDto.getY());
+                log.debug("Обновлена точка с ID {}: x={}, y={}", entity.getId(), entity.getX(), entity.getY());
+            }
+        }
+
+        // Сохраняем все обновленные сущности
+        pointRepository.saveAll(entitiesToUpdate);
+        log.info("Массовое обновление {} точек завершено успешно.", entitiesToUpdate.size());
+    }
+
+    @Override
+    @Transactional
+    public void batchCreatePoints(List<PointCreateDTO> creates) {
+        log.info("Начало массового создания {} точек.", creates.size());
+
+        if (creates.isEmpty()) {
+            log.warn("Список создаваемых точек пуст.");
+            return;
+        }
+
+        // Сгруппируем DTO по ID функции, чтобы минимизировать обращения к БД
+        Map<Long, List<PointCreateDTO>> groupedByFunctionId = creates.stream()
+                .collect(Collectors.groupingBy(PointCreateDTO::getTabulatedFunctionId));
+
+        List<PointEntity> entitiesToSave = new ArrayList<>();
+
+        for (Map.Entry<Long, List<PointCreateDTO>> entry : groupedByFunctionId.entrySet()) {
+            Long functionId = entry.getKey();
+
+            // Проверим, существует ли функция
+            Tabulated_function tabulatedFunction = tabulatedFunctionService.findById(functionId)
+                    .orElseThrow(() -> new RuntimeException("Функция с ID " + functionId + " не найдена."));
+
+            for (PointCreateDTO createDto : entry.getValue()) {
+                PointEntity point = toEntityFromCreateDTO(createDto, tabulatedFunction);
+                entitiesToSave.add(point);
+                log.debug("Подготовлена точка к созданию: x={}, y={}, functionId={}", point.getX(), point.getY(), functionId);
+            }
+        }
+
+        // Сохраняем все точки за один раз
+        pointRepository.saveAll(entitiesToSave);
+        log.info("Массовое создание {} точек завершено успешно.", entitiesToSave.size());
+    }
+
+    // Вспомогательный метод (можно вынести в Mapper, если используется часто)
+    private PointEntity toEntityFromCreateDTO(PointCreateDTO dto, Tabulated_function tabulatedFunction) {
+        if (dto == null || tabulatedFunction == null) {
+            return null;
+        }
+        PointEntity entity = new PointEntity();
+        entity.setX(dto.getX());
+        entity.setY(dto.getY());
+        entity.setTabulatedFunction(tabulatedFunction);
+        return entity;
     }
 }

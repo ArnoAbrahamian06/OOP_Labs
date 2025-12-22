@@ -33,7 +33,7 @@ public interface TabulatedFunctionRepository extends JpaRepository<Tabulated_fun
 
     // Нативный SQL для поиска функций по имени типа функции
     @Query(value = "SELECT tf.* FROM tabulated_functions tf " +
-            "JOIN functions_types ft ON tf.id = ft.tabulated_function_id " +
+            "JOIN functions_types ft ON tf.id = ft.tabulated_f_id " +
             "WHERE ft.name = :functionTypeName", nativeQuery = true)
     List<Tabulated_function> findByFunctionTypeName(@Param("functionTypeName") String functionTypeName);
 }

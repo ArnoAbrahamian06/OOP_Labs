@@ -281,4 +281,30 @@ public class TabulatedFunctionMapper {
 
         return springFunc;
     }
+
+    public TabulatedFunction toComputableFunction(Tabulated_function springFunc) {
+        if (springFunc == null) {
+            return null;
+        }
+
+        List<org.example.entity.PointEntity> springPoints = springFunc.getPoints();
+        if (springPoints == null || springPoints.isEmpty()) {
+            return null;
+        }
+
+        int size = springPoints.size();
+        double[] xValues = new double[size];
+        double[] yValues = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            org.example.entity.PointEntity springPoint = springPoints.get(i);
+            xValues[i] = springPoint.getX();
+            yValues[i] = springPoint.getY();
+        }
+
+        // Создаем базовую функцию без Strict декоратора
+        TabulatedFunction baseFunction = externalFunctionFactory.create(xValues, yValues);
+
+        return baseFunction;
+    }
 }

@@ -42,18 +42,18 @@ public interface PointRepository extends JpaRepository<PointEntity, Long> { // I
 
     // --- Нативные запросы (если нужны специфичные операции) ---
     // Пример: Найти точки, где X или Y равен определённому значению
-    @Query(value = "SELECT * FROM points p WHERE p.x = :value OR p.y = :value", nativeQuery = true)
+    @Query(value = "SELECT * FROM points p WHERE p.x_value = :value OR p.y_value = :value", nativeQuery = true)
     List<PointEntity> findByXOrY(@Param("value") Double value);
 
     // Пример: Найти точки для функции с ID, отсортированные по X
-    @Query(value = "SELECT * FROM points p WHERE p.function_id = :functionId ORDER BY p.x ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM points p WHERE p.f_id = :functionId ORDER BY p.x_value ASC", nativeQuery = true)
     List<PointEntity> findByTabulatedFunctionIdOrderByXAsc(@Param("functionId") Long functionId);
 
     // Пример: Найти точки для функции с ID, отсортированные по Y
-    @Query(value = "SELECT * FROM points p WHERE p.function_id = :functionId ORDER BY p.y ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM points p WHERE p.f_id = :functionId ORDER BY p.y_value ASC", nativeQuery = true)
     List<PointEntity> findByTabulatedFunctionIdOrderByYAsc(@Param("functionId") Long functionId);
 
     // Пример: Найти количество точек для конкретной функции
-    @Query(value = "SELECT COUNT(*) FROM points p WHERE p.function_id = :functionId", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM points p WHERE p.f_id = :functionId", nativeQuery = true)
     Long countByTabulatedFunctionId(@Param("functionId") Long functionId);
 }

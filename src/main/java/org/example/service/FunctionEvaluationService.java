@@ -1,71 +1,72 @@
 package org.example.service;
 
-import org.example.DTO.FunctionEvaluation.EvaluationResponse;
-import org.example.Mapper.TabulatedFunctionMapper;
-import org.example.entity.Tabulated_function;
-import org.example.functions.TabulatedFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.example.DTO.FunctionEvaluation.EvaluationResponse;
+import org.example.entity.Tabulated_function;
+import org.example.functions.TabulatedFunction;
+import org.example.Mapper.TabulatedFunctionMapper;
 
 import java.util.Optional;
 
 @Service
 public class FunctionEvaluationService {
-
     private static final Logger log = LoggerFactory.getLogger(FunctionEvaluationService.class);
 
     private final TabulatedFunctionService tabulatedFunctionService;
     private final TabulatedFunctionMapper tabulatedFunctionMapper;
 
     @Autowired
-    public FunctionEvaluationService(TabulatedFunctionService tabulatedFunctionService,
-                                     TabulatedFunctionMapper tabulatedFunctionMapper) {
+    public FunctionEvaluationService(
+            TabulatedFunctionService tabulatedFunctionService,
+            TabulatedFunctionMapper tabulatedFunctionMapper) {
         this.tabulatedFunctionService = tabulatedFunctionService;
         this.tabulatedFunctionMapper = tabulatedFunctionMapper;
     }
 
-    /**
-     * Оценивает значение функции Y в заданной точке X.
-     * Логика интерполяции/экстраполяции инкапсулирована в доменном объекте TabulatedFunction.
-     *
-     * @param functionId ID функции в базе данных.
-     * @param x Значение аргумента.
-     * @return Optional с объектом EvaluationResponse (X, Y) или Optional.empty()
-     */
-    public Optional<EvaluationResponse> evaluate(Long functionId, double x) {
-        log.info("SERVICE: Запрос на оценку функции ID: {} в точке X: {}", functionId, x);
+    public Optional<EvaluationResponse> evaluate(Long id, double x) {
+        log.info("SERVICE: Запрос на оценку функции ID: {} в точке X: {}", id, x);
 
-        // 1. Загрузка сущности
-        Optional<Tabulated_function> functionEntityOpt = tabulatedFunctionService.findById(functionId);
-        if (functionEntityOpt.isEmpty()) {
-            log.warn("SERVICE: Функция ID: {} не найдена", functionId);
-            return Optional.empty();
-        }
-
-        Tabulated_function functionEntity = functionEntityOpt.get();
-
-        // 2. Преобразование в доменный объект
-        TabulatedFunction coreFunction = tabulatedFunctionMapper.toExternalTabulatedFunction(functionEntity);
-
-        if (coreFunction == null) {
-            log.error("SERVICE: Не удалось преобразовать сущность ID: {} в доменный объект.", functionId);
-            return Optional.empty();
-        }
-
-        // 3. Вычисление значения Y
         try {
-            // Метод apply(x) в TabulatedFunction должен содержать всю логику
-            // интерполяции и экстраполяции.
-            double y = coreFunction.apply(x);
+            // 1. Получаем сущность из БД
+            Tabulated_function entity = tabulatedFunctionService.findById(id)
+                    .orElseThrow(() -> {
+                        log.error("SERVICE: Функция с ID {} не найдена", id);
+                        return new IllegalArgumentException("Функция не найдена");
+                    });
 
-            log.info("SERVICE: Успешная оценка функции ID: {}. X: {} -> Y: {}", functionId, x, y);
+            log.debug("SERVICE: Функция '{}' найдена, точек: {}",
+                    entity.getName(), entity.getPoints().size());
+
+            // 2. Создаем вычислимую функцию (без Strict декоратора)
+            TabulatedFunction computableFunction = tabulatedFunctionMapper.toComputableFunction(entity);
+
+            log.debug("SERVICE: Тип созданной функции: {}",
+                    computableFunction.getClass().getSimpleName());
+
+            // 3. Проверяем границы (для логов)
+            double leftBound = computableFunction.leftBound();
+            double rightBound = computableFunction.rightBound();
+            log.debug("SERVICE: Границы функции: [{}, {}], запрашиваемое X: {}",
+                    leftBound, rightBound, x);
+
+            // 4. Вычисляем значение
+            double y = computableFunction.apply(x);
+
+            log.info("SERVICE: Успешное вычисление: f({}) = {}", x, y);
             return Optional.of(new EvaluationResponse(x, y));
 
+        } catch (IllegalArgumentException e) {
+            log.error("SERVICE: Ошибка валидации: {}", e.getMessage());
+            return Optional.empty();
+        } catch (UnsupportedOperationException e) {
+            log.error("SERVICE: Функция не поддерживает вычисление в точке X={} (ограничения Strict)", x);
+            return Optional.empty();
         } catch (Exception e) {
-            log.error("SERVICE: Ошибка при оценке функции ID: {} в точке X: {}: {}",
-                    functionId, x, e.getMessage());
+            log.error("SERVICE: Непредвиденная ошибка при оценке функции ID: {} в точке X: {}. Причина: {}",
+                    id, x, e.getMessage(), e);
             return Optional.empty();
         }
     }
